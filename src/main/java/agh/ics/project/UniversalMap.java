@@ -11,33 +11,29 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
 
     //V2 - teleportEnabled = false
     // with The Wall build around its edges -> if an animal tries to move outside the map it stays in the same place and looses its turn
-
-    //what do we want it to have:
+    
     protected int width;
     protected int height;
     protected Vector2d bottomLeft;
-    protected Vector2d upperRight; //sizes, and corners of the map
+    protected Vector2d upperRight;
 
     protected int jungleWidth;
     protected int jungleHeight;
     protected Vector2d bottomLeftJungleCorner;
-    protected Vector2d upperRightJungleCorner; // sizes, and corners ~ placement of the jungle
+    protected Vector2d upperRightJungleCorner;
 
-    protected Map<Vector2d, Grass> grass; //we can later write getters
-    protected HashMap<Vector2d, ArrayList<Animal>> animals; //it's grass and animals
+    protected Map<Vector2d, Grass> grass;
+    protected HashMap<Vector2d, ArrayList<Animal>> animals;
     protected ArrayList<Animal> animalStash = new ArrayList<>();
 
     protected int moveEnergyCost;
-    protected int reproductionEnergyCost;// costs of a move and reproduction
-
-
-    // energy profit from eating a grass and the beginning energy of Adams and Eves.
+    protected int reproductionEnergyCost;
+    
     protected int eatingEnergyProfit;
     protected int startEnergy;
 
     protected boolean teleportEnabled;
-
-    //Map Constructor
+    
     public UniversalMap(int width, int height, double jungleToStepRatio, boolean teleportEnabled, int startingEnergy, int moveEnergyCost, int eatingEnergyProfit, int startingAnimals){
         this.width = (width-1);
         this.height = (height-1);
@@ -70,20 +66,16 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
             this.place(newAnimal);
         }
     }
+    
 
-
-
-    //IWorldMap interface implementation
-
-    @Override // in our case animal can move freely, so we will use false to indicate that an animal has to teleport
+    @Override
     public boolean canMoveTo(Vector2d position) {
         return (position.precedes(this.upperRight) && position.follows(bottomLeft));
     }
 
-    @Override //now we gotta put our assumptions into reality when it comes to inserting animals
-    //when it comes to placing, we don't care if there is an animal or a grass on that particular field, we just place the animal
+    @Override
     public boolean place(Animal animal) {
-        if (animal == null) return false; //the only option when placing can fail
+        if (animal == null) return false;
 
         Vector2d pos = animal.getPosition();
         ArrayList<Animal> fieldAnimals = animals.get(pos);
@@ -91,7 +83,7 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
 
         if (fieldAnimals == null){
             ArrayList<Animal> tmp = new ArrayList<>();
-            animal.addObserver(this); //making map the observer of the animal
+            animal.addObserver(this);
             tmp.add(animal);
             animals.put(pos,tmp);
         } else if (fieldAnimals.size() == 0) {
@@ -101,8 +93,8 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         } else {
             animal.addObserver(this);
             fieldAnimals.add(animal);
-            Collections.sort(fieldAnimals); //if i'm correct it will now use that overridden compareTo function
-            animals.put(pos,fieldAnimals); //im doing it just in case, because I don't remember whether get() returns reference or value
+            Collections.sort(fieldAnimals); 
+            animals.put(pos,fieldAnimals);
         }
         return true;
     }
@@ -121,12 +113,8 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         else return fieldAnimals.get(0);
     }
 
-
-    //what else should our map provide?
-
-    //removing dead animals
     public int removeDeadAnimals(){
-        ArrayList<Animal> animalsToRemove = new ArrayList<>(); //we collect all the dead animals
+        ArrayList<Animal> animalsToRemove = new ArrayList<>();
         int deadAnimals = 0;
         for (Map.Entry<Vector2d, ArrayList<Animal>> entry : animals.entrySet()) {
             ArrayList<Animal> listOfAnimals = entry.getValue();
@@ -139,16 +127,14 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
                 }
             }
         }
-        for (Animal deadBody : animalsToRemove) {  //and then remove them
+        for (Animal deadBody : animalsToRemove) {
             animals.get(deadBody.getPosition()).remove(deadBody);
             animalStash.remove(deadBody);
-            //animalsToRemove.remove(i); for now lets hope that GC collects and thrashes that list
         }
 
         return deadAnimals;
     }
-
-    //moving all animals - what we will trigger from our engine
+    
     public void moveAllAnimals(){
 
         for (Animal animal: animalStash) {
@@ -157,14 +143,12 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         }
     }
 
-    //eating the grass
     public void eatingGrass(){
         LinkedList<Grass> toRemove = new LinkedList<>();
 
         grass.forEach((pos,grass) ->{
             ArrayList<Animal> fieldAnimals = animals.get(pos);
             if (fieldAnimals != null && fieldAnimals.size() > 0) {
-                //some necessities for eating
                 ArrayList<Animal> eatingAnimals = new ArrayList<>();
                 boolean flag = true;
                 int topEnergy = fieldAnimals.get(0).energy;
@@ -179,35 +163,27 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
                         ind++;
                     }
                 }
-                //after we collected all of the strongest animals, we can feed them
                 for (Animal animal: eatingAnimals) {
                     animal.energy += this.eatingEnergyProfit / eatingAnimals.size();
 
                     //diagnostic prints
                     System.out.println("A GRASS WAS EATEN");
                 }
-
-                //we also need to remember to remove the grass, since we cant do it inside this loop we will do it the other way
                 toRemove.add(grass);
             }
         });
-
-        //after checking all fields we can remove the eaten tufts
         for (Grass tuft: toRemove) {
             grass.remove(tuft.getPosition());
         }
     }
 
-    //the reproduction of the animals
     public void reproduction(){
-        ArrayList<Animal> children = new ArrayList<>(); //we need to aadd them later to not invoke concurrentModificationException
+        ArrayList<Animal> children = new ArrayList<>();
 
         animals.forEach((pos,listOfAnimals) ->{
-            if (listOfAnimals.size() >= 2) { //checking if we even have enough animals to reproduce
-                if (listOfAnimals.get(0).energy > reproductionEnergyCost) { //to know if the strongest animal is fit enough to be a parent
-                    ArrayList<Animal> potentialParents = new ArrayList<>(); //we should consider top 2 animals, but we may face a situation
-                    //, when a lot of them have the same energy, and then we have to pick them randomly
-                    // to get started
+            if (listOfAnimals.size() >= 2) {
+                if (listOfAnimals.get(0).energy > reproductionEnergyCost) {
+                    ArrayList<Animal> potentialParents = new ArrayList<>();
                     potentialParents.add(listOfAnimals.get(0));
                     int topEnergy = listOfAnimals.get(0).energy;
                     int ind = 1;
@@ -216,37 +192,35 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
 
                     while (flag && ind < listOfAnimals.size() && differentEnergies < 2){
                         Animal otherParent = listOfAnimals.get(ind);
-                        if (otherParent.energy < this.reproductionEnergyCost) flag = false; //when other animal is not strong enough
+                        if (otherParent.energy < this.reproductionEnergyCost) flag = false;
                         else if (otherParent.energy < topEnergy && potentialParents.size() < 2) {
-                            //when the other animal is weaker but still strong enough, and we didn't choose more than one animal before
                             differentEnergies = 2;
                             potentialParents.add(otherParent);
                         }
                         else if (otherParent.energy == topEnergy) {
-                            // if we have a couple of animals with the same energy, big enough to reproduce
                             potentialParents.add(otherParent);
                             ind++;
                         }
-                    } //so now that we've collected potential parents, we should decide what to do with them
-                    if (potentialParents.size() == 2){ //if we only have 2, then it's easy
+                    }
+                    if (potentialParents.size() == 2){
                         Animal child = potentialParents.get(0).reproduce(potentialParents.get(1));
                         children.add(child);
 
-                    } else if (potentialParents.size() > 2) { //now it gets tricky, because we have to choose them randomly
+                    } else if (potentialParents.size() > 2) {
                         Animal parent1, parent2;
-                        int choosen1;
+                        int firstParentChosen;
                         Random generator = new Random();
-                        choosen1 = generator.nextInt(potentialParents.size());
-                        parent1 = potentialParents.get(choosen1);
-                        boolean scndflag = true;
+                        firstParentChosen = generator.nextInt(potentialParents.size());
+                        parent1 = potentialParents.get(firstParentChosen);
+                        boolean secondParentFlag = true;
 
-                        while (scndflag) { //making sure that we don't choose one animal twice
-                            int choosen2 = generator.nextInt(potentialParents.size());
-                            if (choosen2 != choosen1) {
-                                parent2 = potentialParents.get(choosen2);
+                        while (secondParentFlag) {
+                            int secondParentChosen = generator.nextInt(potentialParents.size());
+                            if (secondParentChosen != firstParentChosen) {
+                                parent2 = potentialParents.get(secondParentChosen);
                                 Animal child = parent1.reproduce(parent2);
                                 children.add(child);
-                                scndflag = false;
+                                secondParentFlag = false;
                             }
                         }
                     }
@@ -254,7 +228,7 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
             }
         });
 
-        for (Animal child: children) {  //adding children later to avoid concurrent modification error
+        for (Animal child: children) {
             this.place(child);
 
             //diagnostic prints
@@ -262,19 +236,13 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         }
     }
 
-    //adding two new tufts of grass: one on Steppe and one in the Jungle
     public void AddNewGrass() {
-        //now we have to address three difficulties: one, that we can't place a new grass if any animal stands on the particular field
-        // two, that we have to place each tuft in different ecosystem (Steppe and Jungle respectively),
-        // and three, that if the Jungle is full we don't place a tuft there
-        //also it would be stupid to put a new tuft on top of the other one
-
         Random generator = new Random();
 
         ArrayList<Vector2d> steppeFreeFields = new ArrayList<>();
         ArrayList<Vector2d> jungleFreeFields = new ArrayList<>();
 
-        for (int i=0; i < this.height; i ++){  //selecting fields where we can put new tufts of grass
+        for (int i=0; i < this.height; i ++){
             for (int j=0; j < this.width; j++){
 
                 Vector2d checker = new Vector2d(i,j);
@@ -285,20 +253,17 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
             }
         }
 
-        //adding a new grass on one of the steppe fields
         if (steppeFreeFields.size() > 0) {
             Vector2d chosenSteppe = steppeFreeFields.get(generator.nextInt(steppeFreeFields.size()));
             this.grass.put(chosenSteppe, new Grass(chosenSteppe));
         }
 
-        //doing the same for jungle
         if (jungleFreeFields.size() > 0) {
             Vector2d chosenJungle = jungleFreeFields.get(generator.nextInt(jungleFreeFields.size()));
             this.grass.put(chosenJungle, new Grass(chosenJungle));
         }
     }
 
-    //for general purposes ->
     public int countAnimals() {
         int counter = 0;
         for (Map.Entry<Vector2d, ArrayList<Animal>> entry : animals.entrySet()) {
@@ -308,7 +273,6 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         return counter;
     }
 
-    //implementing magical strategy
     public void cloneAnimals(){
         ArrayList<Animal> clones = new ArrayList<>();
 
@@ -324,12 +288,11 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         }
     }
 
-    //for teleporting moves
     public Vector2d[] getCorners(){
         return new Vector2d[] {this.bottomLeft, this.upperRight};
     }
 
-    @Override //implementing IPositionChangedObserver interface
+    @Override
     public void positionChanged(Vector2d oldPosition, Vector2d newPosition, Animal animal) {
         ArrayList<Animal> oldFieldList = animals.get(oldPosition);
         oldFieldList.remove(animal);
@@ -352,7 +315,6 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         System.out.println("----------------");
     }
 
-    //used in animal to decide what to do about reckless animals, crossing the borders
     public boolean getTeleportValue() {
         return this.teleportEnabled;
     }

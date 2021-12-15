@@ -126,7 +126,6 @@ public class App extends Application {
                 Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
                 if (this.map1.isOccupied(testedPos)) {
 
-                    //laby8
                     GuiElementBox elem = new GuiElementBox((IMapElement) this.map1.objectAt(testedPos));
                     grid.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);

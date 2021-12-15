@@ -4,8 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Animal implements IMapElement, Comparable<Animal> {
-    //key element of the simulation
-    // what attributes should it have : (fot now everything protected later, adaptation)
     protected Vector2d position;
     protected MapDirection orientation;
     protected int energy;
@@ -31,8 +29,6 @@ public class Animal implements IMapElement, Comparable<Animal> {
         this.orientation = MapDirection.NORTH.getRandom();
     }
 
-
-    //IMapElement interface implementation
     public Vector2d getPosition() {
         return this.position;
     }
@@ -63,9 +59,6 @@ public class Animal implements IMapElement, Comparable<Animal> {
         };
     }
 
-    //what else should an animal do
-
-    //move
     public void move(){
         Vector2d oldPosition = this.getPosition();
 
@@ -82,9 +75,9 @@ public class Animal implements IMapElement, Comparable<Animal> {
 
                 if (this.map.canMoveTo(newPosition)) {
                     this.position = newPosition;
-                    this.positionChanged(oldPosition, newPosition); //poking the map to reposition the animal
+                    this.positionChanged(oldPosition, newPosition);
 
-                } else { //considering a moment when an animal steps out of boundaries and may teleport to the other side if the map is in TeleportMode
+                } else {
                     if (this.map.getTeleportValue()) {
                         Vector2d uR = this.map.getCorners()[1];
 
@@ -93,7 +86,7 @@ public class Animal implements IMapElement, Comparable<Animal> {
                         else if (newPosition.x < 0) newPosition = new Vector2d(uR.x, newPosition.y);
                         else if (newPosition.y > ((UniversalMap) this.map).height) newPosition = new Vector2d(newPosition.x, 0);
                         else newPosition = new Vector2d(newPosition.x, uR.y);
-                        this.position = newPosition; //that should pretty much cover all the cases
+                        this.position = newPosition;
                         this.positionChanged(oldPosition, newPosition);
                     }
                 }
@@ -117,7 +110,7 @@ public class Animal implements IMapElement, Comparable<Animal> {
                         else if (newPosition.x < 0) newPosition = new Vector2d(uR.x, newPosition.y);
                         else if (newPosition.y > ((UniversalMap) this.map).height) newPosition = new Vector2d(newPosition.x, 0);
                         else newPosition = new Vector2d(newPosition.x, uR.y);
-                        this.position = newPosition; //that should pretty much cover all the cases
+                        this.position = newPosition;
                         this.positionChanged(oldPosition, newPosition);
                     }
                 }
@@ -128,24 +121,20 @@ public class Animal implements IMapElement, Comparable<Animal> {
         }
     }
 
-    //reproduce
-    //again we assume, that the animal on which it was called was the stronger one and that both of them have enough energy to reproduce
-    // and in effect of love... we get a new cub
+    // we assume, that the animal on which it was called was the stronger one and that both of them have enough energy to reproduce
     public Animal reproduce(Animal mother){
         int cubEnergy = (int) (this.energy * 0.25) + (int) (mother.energy * 0.25);
         int fathersEnergyProportion = this.energy / (this.energy + mother.energy);
         int mothersEnergyProportion = mother.energy / (this.energy + mother.energy);
         Genome cubGenome = new Genome(this.genotype, mother.genotype, fathersEnergyProportion, mothersEnergyProportion);
 
-        //reducing parents energy
         this.energy = (int) (this.energy * 0.75);
         mother.energy = (int) (mother.energy * 0.75);
 
-        //creating and returning a newborn
         return new Animal(this.map, this.position, cubEnergy,cubGenome);
     }
 
-    @Override //important when placing animals
+    @Override
     public int compareTo(Animal o) {
         return -Integer.compare(this.energy, o.energy); //"- " because we want our order to be descending
     }

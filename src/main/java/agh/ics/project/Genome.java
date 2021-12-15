@@ -25,7 +25,7 @@ public class Genome {
     // and mothersEnergyProportion is an int as well, tho the smaller one.
     public Genome(Genome father, Genome mother, int fathersEnergyProportion, int mothersEnergyProportion) {
         Random generator = new Random();
-        if (generator.nextInt() <= 0.5) { //we go from the left side
+        if (generator.nextInt() <= 0.5) {
             for (int i = 0; i < fathersEnergyProportion; i++) genotype.add(father.genotype.get(i));
             for (int j = fathersEnergyProportion; j < 32; j++) genotype.add(mother.genotype.get(j));
         } else {
