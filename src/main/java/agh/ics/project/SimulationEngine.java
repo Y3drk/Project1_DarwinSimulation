@@ -1,12 +1,14 @@
 package agh.ics.project;
 
-public class SimulationEngine {
+public class SimulationEngine implements Runnable {
     protected IWorldMap map;
 
     boolean isMagical;
     int magicMiracles;
 
     int days = -1;
+
+    protected boolean ifUpdate = false;
 
     public SimulationEngine(IWorldMap map, boolean isMagical){
         this.map = map;
@@ -20,7 +22,7 @@ public class SimulationEngine {
 
     public void run() {
         int totalDeaths = 0;
-        while (days < 20 && this.map.countAnimals() > 0) { //for now we have const. as limit but it will be removed later
+        while (days < 100 && this.map.countAnimals() > 0) { //for now we have const. as limit but it will be removed later
             this.days++;
             totalDeaths += this.map.removeDeadAnimals(); //concurrent modification error
 
@@ -43,7 +45,18 @@ public class SimulationEngine {
                 this.magicMiracles--;
                 this.map.cloneAnimals();
             }
+
+            this.ifUpdate = true;
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
+
+    public boolean getUpdateStatus() {return this.ifUpdate;}
+
+    public void resetUpdateStatus() { this.ifUpdate = false;}
 }
 

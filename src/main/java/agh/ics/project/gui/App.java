@@ -2,6 +2,7 @@ package agh.ics.project.gui;
 
 import agh.ics.project.*;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -20,6 +21,9 @@ public class App extends Application {
     protected Vector2d bottomLeft;
 
     protected IWorldMap map1;
+
+    protected Thread engineThread;
+    protected SimulationEngine engine;
 
 
     public void init() {
@@ -43,6 +47,7 @@ public class App extends Application {
 
             this.map1 = map;
 
+            //diagnostic prints
             System.out.println("MAP AT DAY 0");
             System.out.println(map);
             System.out.println("--------------");
@@ -50,8 +55,8 @@ public class App extends Application {
             upperRight = map.getCorners()[1];
             bottomLeft = map.getCorners()[0];
 
-            SimulationEngine engine = new SimulationEngine(map,isMagical);
-            engine.run();
+            this.engine = new SimulationEngine(map,isMagical);
+            //engine.run();
 
 
         } catch (IllegalArgumentException ex) {
@@ -92,16 +97,26 @@ public class App extends Application {
                     board.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
 
-                } else board.add(new Label(" "), i, j);
+                } else {
+                    GuiElementBox elem = new GuiElementBox();
+                    board.add(elem.verticalBox, i, j);
+                    GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
+                }
             }
         }
 
         board.setGridLinesVisible(true);
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        this.engineThread = new Thread(engine);
+        engineThread.start();
+        simulation();
     }
 
     public void GridChanger(GridPane grid) {
+
+        this.engine.resetUpdateStatus();
 
         grid.getColumnConstraints().add(new ColumnConstraints(50));
         grid.add(new Label("y/x"), 0, 0);
@@ -130,11 +145,47 @@ public class App extends Application {
                     grid.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
 
-                } else grid.add(new Label(" "), i, j);
+                } else {
+                    GuiElementBox elem = new GuiElementBox();
+                    grid.add(elem.verticalBox, i, j);
+                    GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
+                }
             }
         }
 
         grid.setGridLinesVisible(true);
+    }
+
+    public void simulation() {
+        //diagnostic print
+        System.out.println("THE SIMULATION HAS STARTED");
+
+        Thread thread = new Thread(() -> {
+            while(true) {
+
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException ex) {
+                    System.out.println(ex);
+                }
+
+                if (this.engine.getUpdateStatus()) {
+                    //diagnostic print
+                    System.out.println("THE GRID CHANGE OCCURS");
+
+                    Platform.runLater(() -> {
+                        board.setGridLinesVisible(false);
+                        board.getColumnConstraints().clear();
+                        board.getRowConstraints().clear();
+                        board.getChildren().clear();
+                        GridChanger(this.board);
+                        board.setGridLinesVisible(true);
+                    });
+
+                }
+            }
+        });
+        thread.start();
     }
 }
 
