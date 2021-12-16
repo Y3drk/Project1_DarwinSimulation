@@ -9,15 +9,15 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 
 public class App extends Application {
-    //right now it's somewhere between lab7a and lab8, in the next few days I will try to push it further
     protected GridPane board = new GridPane();
-    protected Scene scene = new Scene(board, 600, 600);
+    protected Scene simulationScene;
+    protected Scene parametersScene;
 
     protected Vector2d upperRight;
     protected Vector2d bottomLeft;
@@ -29,23 +29,67 @@ public class App extends Application {
 
     protected boolean ifTeleportMapStopped = false;
 
+    protected int startingAnimals;
+    protected int width;
+    protected int height;
+
+    //simulation parameters
+    protected boolean isMagicalForTeleported;
+    protected int startEnergy;
+    protected int moveEnergyCost;
+    protected int eatingGrassEnergyProfit;
+    protected double jungleToSteppeRatio;
+    protected boolean teleportEnabled;
+
 
     public void init() {
+    }
 
+    @Override
+    public void start(Stage primaryStage) {
+        Button beginningButton = new Button("Begin World Simulation!");
+
+        beginningButton.setOnAction(event -> {
+            primaryStage.setScene(simulationScene);
+            this.engineThread = new Thread(engine);
+            engineThread.start();
+            simulation();
+        });
+
+        TextField mapWidth = new TextField("10");
+        Label mapWidthLabel = new Label("Width");
+        HBox widthBox = new HBox(5,mapWidthLabel,mapWidth);
+        widthBox.setAlignment(Pos.CENTER);
+
+        TextField mapHeight = new TextField("10");
+        Label mapHeightLabel = new Label("Height");
+        HBox heightBox = new HBox(5,mapHeightLabel,mapHeight);
+        heightBox.setAlignment(Pos.CENTER);
+
+        VBox choosingPoint = new VBox(10, widthBox, heightBox, beginningButton);
+        choosingPoint.setAlignment(Pos.CENTER);
+
+        parametersScene = new Scene(choosingPoint, 700, 700);
+        primaryStage.setScene(parametersScene);
+        primaryStage.show();
+
+
+
+        //---------------------------------------------------
         try {
             //for now we will write all starting conditions here to check if the backend works
             //map parameters
-            int startingAnimals = 10;
-            int width = 10;
-            int height = 10;
+            this.startingAnimals = 10;
+            this.width = 10;
+            this.height = 10;
 
             //simulation parameters
-            boolean isMagical = false;
-            int startEnergy = 100;
-            int moveEnergyCost = 1;
-            int eatingGrassEnergyProfit = 20;
-            double jungleToSteppeRatio = 0.4;
-            boolean teleportEnabled = true;
+            this.isMagicalForTeleported = false;
+            this.startEnergy = 100;
+            this.moveEnergyCost = 1;
+            this.eatingGrassEnergyProfit = 20;
+            this.jungleToSteppeRatio = 0.4;
+            this.teleportEnabled = true;
 
             IWorldMap map = new UniversalMap(width,height,jungleToSteppeRatio, teleportEnabled, startEnergy,moveEnergyCost,eatingGrassEnergyProfit,startingAnimals);
 
@@ -59,7 +103,7 @@ public class App extends Application {
             upperRight = map.getCorners()[1];
             bottomLeft = map.getCorners()[0];
 
-            this.engine = new SimulationEngine(map,isMagical);
+            this.engine = new SimulationEngine(map,isMagicalForTeleported);
             //engine.run();
 
 
@@ -68,12 +112,8 @@ public class App extends Application {
             System.exit(0);
 
         }
-    }
+        //moving the engine initialization to start so init can have a scene with choices
 
-    @Override
-    public void start(Stage primaryStage) {
-
-        //setting up the start/stop button
         Button startStopButton = new Button("Start/Stop");
 
         //maybe scrollboard will be added later
@@ -82,11 +122,10 @@ public class App extends Application {
 
         VBox wholeUI = new VBox(10, this.board, startStopButton);
         wholeUI.setAlignment(Pos.CENTER);
-        wholeUI.setPadding(new Insets(10, 20, 10, 20));
+        board.setPadding(new Insets(10, 20, 10, 100));
 
-        this.scene = new Scene(wholeUI, 700, 700);
+        this.simulationScene = new Scene(wholeUI, 700, 750);
 
-        //ISSUES
         startStopButton.setOnAction(event -> {
             if(ifTeleportMapStopped){
                 this.engineThread = new Thread(engine);
@@ -102,13 +141,16 @@ public class App extends Application {
 
         //------------------------------------------------
 
-        board.getColumnConstraints().add(new ColumnConstraints(50));
-        board.add(new Label("y/x"), 0, 0);
+        board.getColumnConstraints().add(new ColumnConstraints(40));
+        board.getRowConstraints().add(new RowConstraints(40));
+        Label xyLabel = new Label("y/x");
+        board.add(xyLabel, 0, 0);
+        GridPane.setHalignment(xyLabel, HPos.CENTER);
 
 
         for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
             Label axisLabel = new Label(Integer.toString(i + bottomLeft.x - 1));
-            board.getColumnConstraints().add(new ColumnConstraints(50));
+            board.getColumnConstraints().add(new ColumnConstraints(40));
             board.add(axisLabel, i, 0);
             GridPane.setHalignment(axisLabel, HPos.CENTER);
 
@@ -117,10 +159,10 @@ public class App extends Application {
         for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
             Label axisLabel = new Label(Integer.toString(upperRight.y - j + 1));
             board.add(axisLabel, 0, j);
-            board.getRowConstraints().add(new RowConstraints(50));
+            board.getRowConstraints().add(new RowConstraints(40));
             GridPane.setHalignment(axisLabel, HPos.CENTER);
         }
-        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) { //bład przeliczania
+        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
             for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
 
                 Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
@@ -139,25 +181,23 @@ public class App extends Application {
         }
 
         board.setGridLinesVisible(true);
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-        this.engineThread = new Thread(engine);
-        engineThread.start();
-        simulation();
     }
 
     public void GridChanger(GridPane grid) {
 
         this.engine.resetUpdateStatus();
 
-        grid.getColumnConstraints().add(new ColumnConstraints(50));
-        grid.add(new Label("y/x"), 0, 0);
+        grid.getColumnConstraints().add(new ColumnConstraints(40));
+        grid.getRowConstraints().add(new RowConstraints(40));
+
+        Label xyLabel = new Label("y/x");
+        board.add(xyLabel, 0, 0);
+        GridPane.setHalignment(xyLabel, HPos.CENTER);
 
 
         for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
             Label axisLabel = new Label(Integer.toString(i + bottomLeft.x - 1));
-            grid.getColumnConstraints().add(new ColumnConstraints(50));
+            grid.getColumnConstraints().add(new ColumnConstraints(40));
             grid.add(axisLabel, i, 0);
             GridPane.setHalignment(axisLabel, HPos.CENTER);
 
@@ -166,7 +206,7 @@ public class App extends Application {
         for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
             Label axisLabel = new Label(Integer.toString(upperRight.y - j + 1));
             grid.add(axisLabel, 0, j);
-            grid.getRowConstraints().add(new RowConstraints(50));
+            grid.getRowConstraints().add(new RowConstraints(40));
             GridPane.setHalignment(axisLabel, HPos.CENTER);
         }
         for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {

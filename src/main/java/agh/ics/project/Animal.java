@@ -47,6 +47,8 @@ public class Animal implements IMapElement, Comparable<Animal> {
     }
 
     public String imageAddress() {
+        //different colours for different energy levels
+        //if(this.energy > 50 && this.energy < 200)
         return switch (orientation) {
             case NORTH -> "src/main/resources/up.png";
             case EAST -> "src/main/resources/right.png";

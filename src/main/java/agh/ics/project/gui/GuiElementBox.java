@@ -4,7 +4,7 @@ package agh.ics.project.gui;
 import agh.ics.project.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -33,6 +33,7 @@ public class GuiElementBox {
         imageView.setFitHeight(30);
         imageView.setFitWidth(30);
 
+
         verticalBox = new VBox(imageView);
         verticalBox.setAlignment(Pos.CENTER);
 
@@ -48,8 +49,8 @@ public class GuiElementBox {
 
     public GuiElementBox(IWorldMap map, Vector2d position){
         imageView = new ImageView();
-        imageView.setFitHeight(30);
-        imageView.setFitWidth(30);
+        imageView.setFitHeight(40);
+        imageView.setFitWidth(40);
 
 
         verticalBox = new VBox(imageView);
