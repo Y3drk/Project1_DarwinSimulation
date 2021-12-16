@@ -4,11 +4,13 @@ import agh.ics.project.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 
@@ -20,10 +22,12 @@ public class App extends Application {
     protected Vector2d upperRight;
     protected Vector2d bottomLeft;
 
-    protected IWorldMap map1;
+    protected IWorldMap teleportMap;
 
     protected Thread engineThread;
     protected SimulationEngine engine;
+
+    protected boolean ifTeleportMapStopped = false;
 
 
     public void init() {
@@ -45,7 +49,7 @@ public class App extends Application {
 
             IWorldMap map = new UniversalMap(width,height,jungleToSteppeRatio, teleportEnabled, startEnergy,moveEnergyCost,eatingGrassEnergyProfit,startingAnimals);
 
-            this.map1 = map;
+            this.teleportMap = map;
 
             //diagnostic prints
             System.out.println("MAP AT DAY 0");
@@ -68,6 +72,35 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+
+        //setting up the start/stop button
+        Button startStopButton = new Button("Start/Stop");
+
+        //maybe scrollboard will be added later
+        //ScrollPane scrollForBoard = new ScrollPane();
+        //scrollForBoard.setContent(this.board);
+
+        VBox wholeUI = new VBox(10, this.board, startStopButton);
+        wholeUI.setAlignment(Pos.CENTER);
+        wholeUI.setPadding(new Insets(10, 20, 10, 20));
+
+        this.scene = new Scene(wholeUI, 700, 700);
+
+        //ISSUES
+        startStopButton.setOnAction(event -> {
+            if(ifTeleportMapStopped){
+                this.engineThread = new Thread(engine);
+                engineThread.start();
+                simulation();
+                this.ifTeleportMapStopped = false;
+            } else {
+                this.engineThread.stop();
+                this.ifTeleportMapStopped = true;
+            }
+        });
+
+
+        //------------------------------------------------
 
         board.getColumnConstraints().add(new ColumnConstraints(50));
         board.add(new Label("y/x"), 0, 0);
@@ -92,13 +125,13 @@ public class App extends Application {
 
                 Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
 
-                if (this.map1.isOccupied(testedPos)) {
-                    GuiElementBox elem = new GuiElementBox((IMapElement) this.map1.objectAt(testedPos));
+                if (this.teleportMap.isOccupied(testedPos)) {
+                    GuiElementBox elem = new GuiElementBox((IMapElement) this.teleportMap.objectAt(testedPos), this.teleportMap);
                     board.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
 
                 } else {
-                    GuiElementBox elem = new GuiElementBox();
+                    GuiElementBox elem = new GuiElementBox(this.teleportMap, testedPos);
                     board.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
                 }
@@ -139,14 +172,14 @@ public class App extends Application {
         for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
             for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
                 Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
-                if (this.map1.isOccupied(testedPos)) {
+                if (this.teleportMap.isOccupied(testedPos)) {
 
-                    GuiElementBox elem = new GuiElementBox((IMapElement) this.map1.objectAt(testedPos));
+                    GuiElementBox elem = new GuiElementBox((IMapElement) this.teleportMap.objectAt(testedPos), this.teleportMap);
                     grid.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
 
                 } else {
-                    GuiElementBox elem = new GuiElementBox();
+                    GuiElementBox elem = new GuiElementBox(this.teleportMap, testedPos);
                     grid.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
                 }
@@ -186,6 +219,12 @@ public class App extends Application {
             }
         });
         thread.start();
+    }
+
+    @Override
+    public void stop(){
+        System.out.println("THE VISUALIZATION WINDOW WAS CLOSED");
+        System.exit(0); //temporary adaptation
     }
 }
 

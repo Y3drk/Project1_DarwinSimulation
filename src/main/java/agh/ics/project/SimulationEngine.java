@@ -22,7 +22,7 @@ public class SimulationEngine implements Runnable {
 
     public void run() {
         int totalDeaths = 0;
-        while (days < 100 && this.map.countAnimals() > 0) { //for now we have const. as limit but it will be removed later
+        while (this.map.countAnimals() > 0) { //for now we have const. as limit but it will be removed later
             this.days++;
             totalDeaths += this.map.removeDeadAnimals(); //concurrent modification error
 

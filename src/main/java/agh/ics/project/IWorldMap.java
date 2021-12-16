@@ -93,6 +93,12 @@ public interface IWorldMap {
      */
     Vector2d[] getCorners();
 
+    /** returning two crucial corners of the jungle inside the map
+     * @return a Vector2d array with mentioned corners
+     * no parameters
+     */
+    Vector2d[] getJungleCorners();
+
     /** implementing the magical strategy
      * return type: void
      * no parameters

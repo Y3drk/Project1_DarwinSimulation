@@ -319,6 +319,8 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         return this.teleportEnabled;
     }
 
+    public Vector2d[] getJungleCorners() {return new Vector2d[] {this.bottomLeftJungleCorner, this.upperRightJungleCorner};}
+
     @Override //used purely for testing purposes
     public String toString() {
         MapVisualizer drawing = new MapVisualizer(this);

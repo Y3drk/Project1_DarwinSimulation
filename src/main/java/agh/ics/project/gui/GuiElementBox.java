@@ -23,7 +23,7 @@ public class GuiElementBox {
     ImageView imageView;
     VBox verticalBox;
 
-    public GuiElementBox(IMapElement lifeform){
+    public GuiElementBox(IMapElement lifeform, IWorldMap map){
         try {
             image = new Image(new FileInputStream(lifeform.imageAddress()));
         } catch (FileNotFoundException e) {
@@ -32,19 +32,21 @@ public class GuiElementBox {
         imageView = new ImageView(image);
         imageView.setFitHeight(30);
         imageView.setFitWidth(30);
-        //Label label; in the project the label is redundant so I will probably delete it later on
-
-//        if (lifeform instanceof Grass) {
-//            label = new Label("Algi");
-//        } else label = new Label("Z" + lifeform.getPosition().toString());
 
         verticalBox = new VBox(imageView);
         verticalBox.setAlignment(Pos.CENTER);
-        verticalBox.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
 
+        Vector2d[] jungleCorners = map.getJungleCorners();
+        Vector2d bottomJungle = jungleCorners[0];
+        Vector2d upperJungle = jungleCorners[1];
+
+        if (lifeform.getPosition().precedes(upperJungle) && lifeform.getPosition().follows(bottomJungle))
+        verticalBox.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        else verticalBox.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
     }
 
-    public GuiElementBox(){
+    public GuiElementBox(IWorldMap map, Vector2d position){
         imageView = new ImageView();
         imageView.setFitHeight(30);
         imageView.setFitWidth(30);
@@ -52,7 +54,15 @@ public class GuiElementBox {
 
         verticalBox = new VBox(imageView);
         verticalBox.setAlignment(Pos.CENTER);
-        verticalBox.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        Vector2d[] jungleCorners = map.getJungleCorners();
+        Vector2d bottomJungle = jungleCorners[0];
+        Vector2d upperJungle = jungleCorners[1];
+
+        if (position.precedes(upperJungle) && position.follows(bottomJungle))
+        verticalBox.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        else verticalBox.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
     }
 
 }
