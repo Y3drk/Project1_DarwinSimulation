@@ -15,6 +15,8 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,18 +52,43 @@ public class App extends Application {
 
 
     public void init() {
+        try {
+            images.put("src/main/resources/algs.png", new Image(new FileInputStream("src/main/resources/algs.png")));
+
+            images.put("src/main/resources/highEnergyUp.png", new Image(new FileInputStream("src/main/resources/highEnergyUp.png")));
+            images.put("src/main/resources/highEnergyRight.png", new Image(new FileInputStream("src/main/resources/highEnergyRight.png")));
+            images.put("src/main/resources/highEnergyDown.png", new Image(new FileInputStream("src/main/resources/highEnergyDown.png")));
+            images.put("src/main/resources/highEnergyLeft.png", new Image(new FileInputStream("src/main/resources/highEnergyLeft.png")));
+            images.put("src/main/resources/highEnergyLeftUp.png", new Image(new FileInputStream("src/main/resources/highEnergyLeftUp.png")));
+            images.put("src/main/resources/highEnergyRightUp.png", new Image(new FileInputStream("src/main/resources/highEnergyRightUp.png")));
+            images.put("src/main/resources/highEnergyLeftDown.png", new Image(new FileInputStream("src/main/resources/highEnergyLeftDown.png")));
+            images.put("src/main/resources/highEnergyRightDown.png", new Image(new FileInputStream("src/main/resources/highEnergyRightDown.png")));
+
+            images.put("src/main/resources/up.png", new Image(new FileInputStream("src/main/resources/up.png")));
+            images.put("src/main/resources/right.png", new Image(new FileInputStream("src/main/resources/right.png")));
+            images.put("src/main/resources/down.png", new Image(new FileInputStream("src/main/resources/down.png")));
+            images.put("src/main/resources/left.png", new Image(new FileInputStream("src/main/resources/left.png")));
+            images.put("src/main/resources/leftUp.png", new Image(new FileInputStream("src/main/resources/leftUp.png")));
+            images.put("src/main/resources/leftDown.png", new Image(new FileInputStream("src/main/resources/leftDown.png")));
+            images.put("src/main/resources/rightUp.png", new Image(new FileInputStream("src/main/resources/rightUp.png")));
+            images.put("src/main/resources/rightDown.png", new Image(new FileInputStream("src/main/resources/rightDown.png")));
+
+            images.put("src/main/resources/lowEnergyUp.png", new Image(new FileInputStream("src/main/resources/lowEnergyUp.png")));
+            images.put("src/main/resources/lowEnergyRight.png", new Image(new FileInputStream("src/main/resources/lowEnergyRight.png")));
+            images.put("src/main/resources/lowEnergyDown.png", new Image(new FileInputStream("src/main/resources/lowEnergyDown.png")));
+            images.put("src/main/resources/lowEnergyLeft.png", new Image(new FileInputStream("src/main/resources/lowEnergyLeft.png")));
+            images.put("src/main/resources/lowEnergyLeftUp.png", new Image(new FileInputStream("src/main/resources/lowEnergyLeftUp.png")));
+            images.put("src/main/resources/lowEnergyLeftDown.png", new Image(new FileInputStream("src/main/resources/lowEnergyLeftDown.png")));
+            images.put("src/main/resources/lowEnergyRightUp.png", new Image(new FileInputStream("src/main/resources/lowEnergyRightUp.png")));
+            images.put("src/main/resources/lowEnergyRightDown.png", new Image(new FileInputStream("src/main/resources/lowEnergyRightDown.png")));
+        } catch (FileNotFoundException ex){
+            System.out.println("FILE NOT FOUND");
+        }
     }
 
     @Override
     public void start(Stage primaryStage) {
         Button beginningButton = new Button("Begin World Simulation!");
-
-        beginningButton.setOnAction(event -> {
-            primaryStage.setScene(simulationScene);
-            this.engineThread = new Thread(engine);
-            engineThread.start();
-            simulation();
-        });
 
         TextField mapWidth = new TextField("10");
         Label mapWidthLabel = new Label("Width");
@@ -88,8 +115,8 @@ public class App extends Application {
         HBox eatingEnergyProfitBox = new HBox(5,mapEatingEnergyProfitLabel,mapEatingEnergyProfit);
         eatingEnergyProfitBox.setAlignment(Pos.CENTER);
 
-        TextField mapJungletoSteppe = new TextField("100");
-        Label mapJungletoSteppeLabel = new Label("StartEnergy");
+        TextField mapJungletoSteppe = new TextField("0.5");
+        Label mapJungletoSteppeLabel = new Label("JungletoSteppeRatio");
         HBox jungletoSteppeBox = new HBox(5,mapJungletoSteppeLabel,mapJungletoSteppe);
         jungletoSteppeBox.setAlignment(Pos.CENTER);
 
@@ -115,23 +142,22 @@ public class App extends Application {
 
         //to add -> service of all the inputs!!!!!
 
+        beginningButton.setOnAction(event -> {
+            try {
+                this.startingAnimals = Integer.parseInt(mapStartingAnimals.getText());
+                this.width = Integer.parseInt(mapWidth.getText());
+                this.height = Integer.parseInt(mapHeight.getText());
 
-
-        //---------------------------------------------------
-        try {
-            //for now we will write all starting conditions here to check if the backend works
-            //map parameters
-            this.startingAnimals = 10;
-            this.width = 10;
-            this.height = 10;
-
-            //simulation parameters
-            this.isMagicalForTeleported = false;
-            this.startEnergy = 100;
-            this.moveEnergyCost = 1;
-            this.eatingGrassEnergyProfit = 20;
-            this.jungleToSteppeRatio = 0.4;
-            this.teleportEnabled = true;
+                //simulation parameters
+                this.isMagicalForTeleported = isTeleportMapMagical.isSelected();
+                this.startEnergy = Integer.parseInt(mapStartEnergy.getText());
+                this.moveEnergyCost = Integer.parseInt(mapMoveEnergy.getText());
+                this.eatingGrassEnergyProfit = Integer.parseInt(mapEatingEnergyProfit.getText());
+                this.jungleToSteppeRatio = Double.parseDouble(mapJungletoSteppe.getText());
+                this.teleportEnabled = true;
+            } catch (IllegalArgumentException ex){
+                System.out.println("ILLEGAL ARGUMENTS WERE PASSED!");
+            }
 
             IWorldMap map = new UniversalMap(width,height,jungleToSteppeRatio, teleportEnabled, startEnergy,moveEnergyCost,eatingGrassEnergyProfit,startingAnimals);
 
@@ -146,14 +172,32 @@ public class App extends Application {
             bottomLeft = map.getCorners()[0];
 
             this.engine = new SimulationEngine(map,isMagicalForTeleported);
-            //engine.run();
+
+            //------------------------
+            primaryStage.setScene(simulationScene);
+            this.engineThread = new Thread(engine);
+            engineThread.start();
+            simulation();
+        });
 
 
-        } catch (IllegalArgumentException ex) {
-            System.out.println(ex);
-            System.exit(0);
+        //---------------------------------------------------
 
-        }
+
+            IWorldMap map = new UniversalMap(width,height,jungleToSteppeRatio, teleportEnabled, startEnergy,moveEnergyCost,eatingGrassEnergyProfit,startingAnimals);
+
+            this.teleportMap = map;
+
+            //diagnostic prints
+            System.out.println("MAP AT DAY 0");
+            System.out.println(map);
+            System.out.println("--------------");
+
+            upperRight = map.getCorners()[1];
+            bottomLeft = map.getCorners()[0];
+
+            this.engine = new SimulationEngine(map,isMagicalForTeleported);
+
         //moving the engine initialization to start so init can have a scene with choices
 
         Button startStopButton = new Button("Start/Stop");
@@ -210,7 +254,7 @@ public class App extends Application {
                 Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
 
                 if (this.teleportMap.isOccupied(testedPos)) {
-                    GuiElementBox elem = new GuiElementBox((IMapElement) this.teleportMap.objectAt(testedPos), this.teleportMap);
+                    GuiElementBox elem = new GuiElementBox((IMapElement) this.teleportMap.objectAt(testedPos), this.teleportMap, images);
                     board.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
 
@@ -256,7 +300,7 @@ public class App extends Application {
                 Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
                 if (this.teleportMap.isOccupied(testedPos)) {
 
-                    GuiElementBox elem = new GuiElementBox((IMapElement) this.teleportMap.objectAt(testedPos), this.teleportMap);
+                    GuiElementBox elem = new GuiElementBox((IMapElement) this.teleportMap.objectAt(testedPos), this.teleportMap, images);
                     grid.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
 
@@ -281,7 +325,7 @@ public class App extends Application {
                 try {
                     Thread.sleep(300);
                 } catch (InterruptedException ex) {
-                    System.out.println(ex);
+                    System.out.println("THREAD WAS INTERRUPTED");
                 }
 
                 if (this.engine.getUpdateStatus()) {

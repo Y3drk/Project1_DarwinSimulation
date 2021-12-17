@@ -50,6 +50,30 @@ public class Animal implements IMapElement, Comparable<Animal> {
         //idea
         //different colours for different energy levels
         //if(this.energy > 50 && this.energy < 200)
+        if (this.energy > 200) {
+            return switch (orientation){
+                case NORTH -> "src/main/resources/highEnergyUp.png";
+                case EAST -> "src/main/resources/highEnergyRight.png";
+                case SOUTH -> "src/main/resources/highEnergyDown.png";
+                case WEST -> "src/main/resources/highEnergyLeft.png";
+                case NORTHWEST -> "src/main/resources/highEnergyLeftUp.png";
+                case NORTHEAST -> "src/main/resources/highEnergyRightUp.png";
+                case SOUTHWEST -> "src/main/resources/highEnergyLeftDown.png";
+                case SOUTHEAST -> "src/main/resources/highEnergyRightDown.png";
+            };
+        }
+        else if (this.energy < 50){
+            return switch (orientation) {
+                case NORTH -> "src/main/resources/lowEnergyUp.png";
+                case EAST -> "src/main/resources/lowEnergyRight.png";
+                case SOUTH -> "src/main/resources/lowEnergyDown.png";
+                case WEST -> "src/main/resources/lowEnergyLeft.png";
+                case NORTHWEST -> "src/main/resources/lowEnergyLeftUp.png";
+                case NORTHEAST -> "src/main/resources/lowEnergyRightUp.png";
+                case SOUTHWEST -> "src/main/resources/lowEnergyLeftDown.png";
+                case SOUTHEAST -> "src/main/resources/lowEnergyRightDown.png";
+            };
+        }
         return switch (orientation) {
             case NORTH -> "src/main/resources/up.png";
             case EAST -> "src/main/resources/right.png";

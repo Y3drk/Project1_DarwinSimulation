@@ -41,7 +41,7 @@ public class SimulationEngine implements Runnable {
             System.out.println(this.map);
             System.out.println("----------------------");
 
-            if (isMagical && this.map.countAnimals() == 5){
+            if (isMagical && this.map.countAnimals() == 5 && this.magicMiracles > 0){
                 this.magicMiracles--;
                 this.map.cloneAnimals();
             }

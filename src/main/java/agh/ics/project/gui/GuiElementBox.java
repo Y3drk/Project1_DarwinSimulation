@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Map;
 
 public class GuiElementBox {
     //for now it's in state in which I left it after labs -> we will change a few thing along the way (turtle brightness, labels and so on)
@@ -23,12 +24,9 @@ public class GuiElementBox {
     ImageView imageView;
     VBox verticalBox;
 
-    public GuiElementBox(IMapElement lifeform, IWorldMap map){
-        try {
-            image = new Image(new FileInputStream(lifeform.imageAddress()));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+    public GuiElementBox(IMapElement lifeform, IWorldMap map, Map<String,Image> images){
+        image = images.get(lifeform.imageAddress());
+
         imageView = new ImageView(image);
         imageView.setFitHeight(30);
         imageView.setFitWidth(30);
