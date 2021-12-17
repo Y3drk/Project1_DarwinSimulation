@@ -8,10 +8,15 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class App extends Application {
@@ -32,6 +37,8 @@ public class App extends Application {
     protected int startingAnimals;
     protected int width;
     protected int height;
+
+    protected Map<String, Image> images = new HashMap<>(); //TO DO - to not reload every image in every refresh
 
     //simulation parameters
     protected boolean isMagicalForTeleported;
@@ -66,12 +73,47 @@ public class App extends Application {
         HBox heightBox = new HBox(5,mapHeightLabel,mapHeight);
         heightBox.setAlignment(Pos.CENTER);
 
-        VBox choosingPoint = new VBox(10, widthBox, heightBox, beginningButton);
+        TextField mapStartEnergy = new TextField("100");
+        Label mapStartEnergyLabel = new Label("StartEnergy");
+        HBox startEnergyBox = new HBox(5,mapStartEnergyLabel,mapStartEnergy);
+        startEnergyBox.setAlignment(Pos.CENTER);
+
+        TextField mapMoveEnergy = new TextField("15");
+        Label mapMoveEnergyLabel = new Label("MoveEnergy");
+        HBox moveEnergyBox = new HBox(5,mapMoveEnergyLabel,mapMoveEnergy);
+        moveEnergyBox.setAlignment(Pos.CENTER);
+
+        TextField mapEatingEnergyProfit = new TextField("30");
+        Label mapEatingEnergyProfitLabel = new Label("EatingEnergyProfit");
+        HBox eatingEnergyProfitBox = new HBox(5,mapEatingEnergyProfitLabel,mapEatingEnergyProfit);
+        eatingEnergyProfitBox.setAlignment(Pos.CENTER);
+
+        TextField mapJungletoSteppe = new TextField("100");
+        Label mapJungletoSteppeLabel = new Label("StartEnergy");
+        HBox jungletoSteppeBox = new HBox(5,mapJungletoSteppeLabel,mapJungletoSteppe);
+        jungletoSteppeBox.setAlignment(Pos.CENTER);
+
+        TextField mapStartingAnimals = new TextField("10");
+        Label mapStartingAnimalsLabel = new Label("StartingAnimals");
+        HBox startingAnimalsBox = new HBox(5,mapStartingAnimalsLabel,mapStartingAnimals);
+        startingAnimalsBox.setAlignment(Pos.CENTER);
+
+        CheckBox isTeleportMapMagical = new CheckBox("IsTeleportMapMagical");
+        HBox isTPMapMagicalBox = new HBox(5,isTeleportMapMagical);
+        isTPMapMagicalBox.setAlignment(Pos.CENTER);
+
+        CheckBox isWallMapMagical = new CheckBox("IsWallMapMagical");
+        HBox isWallMapMagicalBox = new HBox(5,isWallMapMagical);
+        isWallMapMagicalBox.setAlignment(Pos.CENTER);
+
+        VBox choosingPoint = new VBox(10, widthBox, heightBox, startEnergyBox, moveEnergyBox,eatingEnergyProfitBox, jungletoSteppeBox, startingAnimalsBox, isTPMapMagicalBox, isWallMapMagicalBox, beginningButton);
         choosingPoint.setAlignment(Pos.CENTER);
 
         parametersScene = new Scene(choosingPoint, 700, 700);
         primaryStage.setScene(parametersScene);
         primaryStage.show();
+
+        //to add -> service of all the inputs!!!!!
 
 
 

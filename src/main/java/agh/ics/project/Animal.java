@@ -47,6 +47,7 @@ public class Animal implements IMapElement, Comparable<Animal> {
     }
 
     public String imageAddress() {
+        //idea
         //different colours for different energy levels
         //if(this.energy > 50 && this.energy < 200)
         return switch (orientation) {
@@ -83,11 +84,18 @@ public class Animal implements IMapElement, Comparable<Animal> {
                     if (this.map.getTeleportValue()) {
                         Vector2d uR = this.map.getCorners()[1];
 
-                        //maybe we can make this easier using modulo, but generally it works
-                        if (newPosition.x > ((UniversalMap) this.map).width) newPosition = new Vector2d(0,newPosition.y);
-                        else if (newPosition.x < 0) newPosition = new Vector2d(uR.x, newPosition.y);
-                        else if (newPosition.y > ((UniversalMap) this.map).height) newPosition = new Vector2d(newPosition.x, 0);
-                        else newPosition = new Vector2d(newPosition.x, uR.y);
+                        if (newPosition.x > ((UniversalMap) this.map).width){
+                            newPosition = new Vector2d(0,newPosition.y);
+                        }
+                        else if (newPosition.x < 0) {
+                            newPosition = new Vector2d(uR.x, newPosition.y);
+                        }
+                        else if (newPosition.y > ((UniversalMap) this.map).height) {
+                            newPosition = new Vector2d(newPosition.x, 0);
+                        }
+                        else {
+                            newPosition = new Vector2d(newPosition.x, uR.y);
+                        }
                         this.position = newPosition;
                         this.positionChanged(oldPosition, newPosition);
                     }
@@ -108,10 +116,19 @@ public class Animal implements IMapElement, Comparable<Animal> {
                 } else {
                     if (this.map.getTeleportValue()) {
                         Vector2d uR = (this.map).getCorners()[1];
-                        if (newPosition.x > ((UniversalMap) this.map).width) newPosition = new Vector2d(0,newPosition.y);
-                        else if (newPosition.x < 0) newPosition = new Vector2d(uR.x, newPosition.y);
-                        else if (newPosition.y > ((UniversalMap) this.map).height) newPosition = new Vector2d(newPosition.x, 0);
-                        else newPosition = new Vector2d(newPosition.x, uR.y);
+
+                        if (newPosition.x > ((UniversalMap) this.map).width) {
+                            newPosition = new Vector2d(0,newPosition.y);
+                        }
+                        else if (newPosition.x < 0) {
+                            newPosition = new Vector2d(uR.x, newPosition.y);
+                        }
+                        else if (newPosition.y > ((UniversalMap) this.map).height) {
+                            newPosition = new Vector2d(newPosition.x, 0);
+                        }
+                        else {
+                            newPosition = new Vector2d(newPosition.x, uR.y);
+                        }
                         this.position = newPosition;
                         this.positionChanged(oldPosition, newPosition);
                     }
