@@ -140,8 +140,6 @@ public class App extends Application {
         primaryStage.setScene(parametersScene);
         primaryStage.show();
 
-        //to add -> service of all the inputs!!!!!
-
         beginningButton.setOnAction(event -> {
             try {
                 this.startingAnimals = Integer.parseInt(mapStartingAnimals.getText());
@@ -174,31 +172,18 @@ public class App extends Application {
             this.engine = new SimulationEngine(map,isMagicalForTeleported);
 
             //------------------------
+            InitializeSimulationScene();
             primaryStage.setScene(simulationScene);
             this.engineThread = new Thread(engine);
             engineThread.start();
             simulation();
         });
+    }
 
+    public void InitializeSimulationScene(){
+        upperRight = this.teleportMap.getCorners()[1];
+        bottomLeft = this.teleportMap.getCorners()[0];
 
-        //---------------------------------------------------
-
-
-            IWorldMap map = new UniversalMap(width,height,jungleToSteppeRatio, teleportEnabled, startEnergy,moveEnergyCost,eatingGrassEnergyProfit,startingAnimals);
-
-            this.teleportMap = map;
-
-            //diagnostic prints
-            System.out.println("MAP AT DAY 0");
-            System.out.println(map);
-            System.out.println("--------------");
-
-            upperRight = map.getCorners()[1];
-            bottomLeft = map.getCorners()[0];
-
-            this.engine = new SimulationEngine(map,isMagicalForTeleported);
-
-        //moving the engine initialization to start so init can have a scene with choices
 
         Button startStopButton = new Button("Start/Stop");
 
