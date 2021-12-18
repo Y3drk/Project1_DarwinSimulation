@@ -54,11 +54,11 @@ public interface IWorldMap {
     void moveAllAnimals();
 
     /**
-     * remove all dead animals and count them
-     * @return amount of dead animals
+     * remove all dead animals and count them as well as sum the days they have lived
+     * @return array consisting of :amount of dead animals, sum  of the days they have lived.
      * no parameters
      */
-    int removeDeadAnimals();
+    int[] removeDeadAnimals();
 
     /**
      * eat all tufts of grass that have animals standing on it
@@ -87,6 +87,12 @@ public interface IWorldMap {
      */
     int countAnimals();
 
+    /** counting the grass present on the map
+     * @return a number of all present tufts of grass
+     * no parameters
+     */
+    int countGrass();
+
     /** returning two crucial corners of the map
      * @return a Vector2d array with mentioned corners
      * no parameters
@@ -98,6 +104,18 @@ public interface IWorldMap {
      * no parameters
      */
     Vector2d[] getJungleCorners();
+
+    /** returning average energy of living animals
+     * @return as described
+     * no parameters
+     */
+    int getAverageEnergy();
+
+    /** returning average amount of children among living animals
+     * @return as described
+     * no parameters
+     */
+    int getAverageChildren();
 
     /** implementing the magical strategy
      * return type: void

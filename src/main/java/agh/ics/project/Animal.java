@@ -7,6 +7,8 @@ public class Animal implements IMapElement, Comparable<Animal> {
     protected Vector2d position;
     protected MapDirection orientation;
     protected int energy;
+    protected int children = 0;
+    protected int daysAlive = 0;
     protected Genome genotype;
     protected IWorldMap map;
     protected Set<IPositionChangeObserver> observers = new HashSet<>();
@@ -47,9 +49,6 @@ public class Animal implements IMapElement, Comparable<Animal> {
     }
 
     public String imageAddress() {
-        //idea
-        //different colours for different energy levels
-        //if(this.energy > 50 && this.energy < 200)
         if (this.energy > 200) {
             return switch (orientation){
                 case NORTH -> "src/main/resources/highEnergyUp.png";
@@ -87,18 +86,19 @@ public class Animal implements IMapElement, Comparable<Animal> {
     }
 
     public void move(){
+        this.daysAlive++;
         Vector2d oldPosition = this.getPosition();
 
         int move = this.genotype.getRandomGen();
-
-        System.out.println("ANIMAL FROM " + oldPosition.toString() + "WITH ORIENTATION: " + this.orientation.toString() + " HAS CHOSEN A MOVE: "+ move);
+        //diagnostic print
+        //System.out.println("ANIMAL FROM " + oldPosition.toString() + "WITH ORIENTATION: " + this.orientation.toString() + " HAS CHOSEN A MOVE: "+ move);
 
         switch (move) {
             case 0 ->{
                 Vector2d newPosition = this.position.add(this.orientation.toUnitVector());
-
-                System.out.println("CALCULATED NEW POSITION: "+ newPosition.toString());
-                System.out.println("IF ANIMAL CAN MOVE THERE:" + this.map.canMoveTo(newPosition));
+                //diagnostic prints
+                //System.out.println("CALCULATED NEW POSITION: "+ newPosition.toString());
+                //System.out.println("IF ANIMAL CAN MOVE THERE:" + this.map.canMoveTo(newPosition));
 
                 if (this.map.canMoveTo(newPosition)) {
                     this.position = newPosition;
@@ -131,8 +131,9 @@ public class Animal implements IMapElement, Comparable<Animal> {
             case 4 -> {
                 Vector2d newPosition = this.position.subtract(this.orientation.toUnitVector());
 
-                System.out.println("CALCULATED NEW POSITION: "+ newPosition.toString());
-                System.out.println("IF ANIMAL CAN MOVE THERE:" + this.map.canMoveTo(newPosition));
+                //diagnostic prints
+                //System.out.println("CALCULATED NEW POSITION: "+ newPosition.toString());
+                //System.out.println("IF ANIMAL CAN MOVE THERE:" + this.map.canMoveTo(newPosition));
 
                 if (this.map.canMoveTo(newPosition)) {
                     this.position = newPosition;

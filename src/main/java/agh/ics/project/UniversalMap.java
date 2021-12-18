@@ -113,8 +113,9 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         else return fieldAnimals.get(0);
     }
 
-    public int removeDeadAnimals(){
+    public int[] removeDeadAnimals(){
         ArrayList<Animal> animalsToRemove = new ArrayList<>();
+        int sumDaysLived = 0;
         int deadAnimals = 0;
         for (Map.Entry<Vector2d, ArrayList<Animal>> entry : animals.entrySet()) {
             ArrayList<Animal> listOfAnimals = entry.getValue();
@@ -122,6 +123,7 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
                 for (Animal animal: listOfAnimals) {
                     if (animal.energy < 0) {
                         animalsToRemove.add(animal);
+                        sumDaysLived += animal.daysAlive;
                         deadAnimals++;
                     }
                 }
@@ -132,7 +134,7 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
             animalStash.remove(deadBody);
         }
 
-        return deadAnimals;
+        return new int[] {deadAnimals, sumDaysLived};
     }
     
     public void moveAllAnimals(){
@@ -167,7 +169,7 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
                     animal.energy += this.eatingEnergyProfit / eatingAnimals.size();
 
                     //diagnostic prints
-                    System.out.println("A GRASS WAS EATEN");
+                    //System.out.println("A GRASS WAS EATEN");
                 }
                 toRemove.add(grass);
             }
@@ -204,6 +206,8 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
                     }
                     if (potentialParents.size() == 2){
                         Animal child = potentialParents.get(0).reproduce(potentialParents.get(1));
+                        potentialParents.get(0).children += 1;
+                        potentialParents.get(1).children += 1;
                         children.add(child);
 
                     } else if (potentialParents.size() > 2) {
@@ -219,6 +223,8 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
                             if (secondParentChosen != firstParentChosen) {
                                 parent2 = potentialParents.get(secondParentChosen);
                                 Animal child = parent1.reproduce(parent2);
+                                parent1.children += 1;
+                                parent2.children += 1;
                                 children.add(child);
                                 secondParentFlag = false;
                             }
@@ -232,7 +238,7 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
             this.place(child);
 
             //diagnostic prints
-            System.out.println("A CHILD WAS BORN ON FIELD" + child.getPosition() + " AND HAS: " + child.energy + " ENERGY");
+            //System.out.println("A CHILD WAS BORN ON FIELD" + child.getPosition() + " AND HAS: " + child.energy + " ENERGY");
         }
     }
 
@@ -273,6 +279,10 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         return counter;
     }
 
+    public int countGrass(){
+        return this.grass.size();
+    }
+
     public void cloneAnimals(){
         ArrayList<Animal> clones = new ArrayList<>();
 
@@ -311,8 +321,8 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
             animals.put(newPosition,newFieldList);
         }
         //diagnostic prints
-        System.out.println("ANIMAL HAS MOVED FROM:" + oldPosition.toString() + " TO " + newPosition.toString());
-        System.out.println("----------------");
+//        System.out.println("ANIMAL HAS MOVED FROM:" + oldPosition.toString() + " TO " + newPosition.toString());
+//        System.out.println("----------------");
     }
 
     public boolean getTeleportValue() {
@@ -320,6 +330,22 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
     }
 
     public Vector2d[] getJungleCorners() {return new Vector2d[] {this.bottomLeftJungleCorner, this.upperRightJungleCorner};}
+
+    public int getAverageEnergy(){
+        int energySum = 0;
+        for (Animal animal: animalStash) {
+            energySum += animal.energy;
+        }
+        return energySum / animalStash.size();
+    }
+
+    public int getAverageChildren(){
+        int childrenSum = 0;
+        for (Animal animal: animalStash) {
+            childrenSum += animal.children;
+        }
+        return childrenSum / animalStash.size();
+    }
 
     @Override //used purely for testing purposes
     public String toString() {

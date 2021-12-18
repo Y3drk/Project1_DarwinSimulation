@@ -3,10 +3,12 @@ package agh.ics.project;
 public class SimulationEngine implements Runnable {
     protected IWorldMap map;
 
-    boolean isMagical;
-    int magicMiracles;
+    protected boolean isMagical;
+    protected int magicMiracles;
 
-    int days = -1;
+    protected int days = -1;
+    protected int daysLived = 0;
+    protected int totalDeaths = 0;
 
     protected boolean ifUpdate = false;
 
@@ -21,10 +23,11 @@ public class SimulationEngine implements Runnable {
 
 
     public void run() {
-        int totalDeaths = 0;
-        while (this.map.countAnimals() > 0) { //for now we have const. as limit but it will be removed later
+        while (this.map.countAnimals() > 0) {
             this.days++;
-            totalDeaths += this.map.removeDeadAnimals(); //concurrent modification error
+            int[] temporary = this.map.removeDeadAnimals();
+            totalDeaths += temporary[0];
+            daysLived += temporary[1];
 
             this.map.moveAllAnimals();
 
@@ -35,11 +38,11 @@ public class SimulationEngine implements Runnable {
             this.map.AddNewGrass();
 
             //diagnostic prints
-            System.out.println("AFTER DAY NUMBER: " + days);
-            System.out.println("TOTAL NUMBER OF DEAD ANIMALS: " + totalDeaths);
-            System.out.println("NUMBER OF ALIVE ANIMALS: " + this.map.countAnimals());
-            System.out.println(this.map);
-            System.out.println("----------------------");
+//            System.out.println("AFTER DAY NUMBER: " + days);
+//            System.out.println("TOTAL NUMBER OF DEAD ANIMALS: " + totalDeaths);
+//            System.out.println("NUMBER OF ALIVE ANIMALS: " + this.map.countAnimals());
+//            System.out.println(this.map);
+//            System.out.println("----------------------");
 
             if (isMagical && this.map.countAnimals() == 5 && this.magicMiracles > 0){
                 this.magicMiracles--;
@@ -48,7 +51,7 @@ public class SimulationEngine implements Runnable {
 
             this.ifUpdate = true;
             try {
-                Thread.sleep(400);
+                Thread.sleep(300);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -58,5 +61,12 @@ public class SimulationEngine implements Runnable {
     public boolean getUpdateStatus() {return this.ifUpdate;}
 
     public void resetUpdateStatus() { this.ifUpdate = false;}
+
+    public int getDay() {return this.days;}
+
+    public int getAverageLifeLength() {
+        if (this.totalDeaths != 0) return (daysLived / totalDeaths);
+        else return 0;
+    }
 }
 

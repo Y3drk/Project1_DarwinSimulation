@@ -7,6 +7,9 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
@@ -57,6 +60,20 @@ public class App extends Application {
     protected double jungleToSteppeRatio;
     protected boolean teleportEnabled;
 
+    //data charts series
+    protected LineChart<Number, Number> teleportMapChart;
+    protected XYChart.Series<Number,Number> aliveAnimalsTP = new XYChart.Series<>();
+    protected XYChart.Series<Number,Number> aliveGrassTP = new XYChart.Series<>();
+    protected XYChart.Series<Number,Number> averageEnergyTP = new XYChart.Series<>();
+    protected XYChart.Series<Number,Number> averageChildrenAmountTP = new XYChart.Series<>();
+    protected XYChart.Series<Number,Number> averageDaysLivedTP = new XYChart.Series<>();
+
+    protected LineChart<Number, Number> walledMapChart;
+    protected XYChart.Series<Number,Number> aliveAnimalsWL = new XYChart.Series<>();
+    protected XYChart.Series<Number,Number> aliveGrassWL = new XYChart.Series<>();
+    protected XYChart.Series<Number,Number> averageEnergyWL = new XYChart.Series<>();
+    protected XYChart.Series<Number,Number> averageChildrenAmountWL = new XYChart.Series<>();
+    protected XYChart.Series<Number,Number> averageDaysLivedWL = new XYChart.Series<>();
 
     public void init() {
         try {
@@ -173,9 +190,9 @@ public class App extends Application {
             this.walledMap = walledMap;
 
             //diagnostic prints
-            System.out.println("MAP AT DAY 0");
-            System.out.println(map);
-            System.out.println("--------------");
+//            System.out.println("MAP AT DAY 0");
+//            System.out.println(map);
+//            System.out.println("--------------");
 
             upperRight = map.getCorners()[1];
             bottomLeft = map.getCorners()[0];
@@ -183,7 +200,7 @@ public class App extends Application {
             this.engine = new SimulationEngine(map,isMagicalForTeleported);
             this.walledEngine = new SimulationEngine(walledMap,isMagicalForWalled);
 
-            InitializeSimulationScene();
+            initializeSimulationScene();
             primaryStage.setScene(simulationScene);
             this.engineThread = new Thread(engine);
             this.walledEngineThread = new Thread(walledEngine);
@@ -196,7 +213,7 @@ public class App extends Application {
         });
     }
 
-    public void InitializeSimulationScene(){
+    public void initializeSimulationScene(){
         Button startStopButtonTP = new Button("Start/Stop TP");
         Button startStopButtonWL = new Button("Start/Stop WL");
 
@@ -217,10 +234,12 @@ public class App extends Application {
         board.setPadding(new Insets(10, 20, 10, 100));
         walledBoard.setPadding(new Insets(10, 20, 10, 100));
 
-        VBox tpMapUI = new VBox(10, teleportMapLabel, scrollForTPBoard, startStopButtonTP);
+        initializeCharts();
+
+        VBox tpMapUI = new VBox(10, teleportMapLabel, scrollForTPBoard, startStopButtonTP, teleportMapChart);
         tpMapUI.setAlignment(Pos.CENTER);
 
-        VBox wlMapUI = new VBox(10,walledMapLabel,scrollForWLBoard,startStopButtonWL);
+        VBox wlMapUI = new VBox(10,walledMapLabel,scrollForWLBoard,startStopButtonWL, walledMapChart);
         wlMapUI.setAlignment(Pos.CENTER);
 
         HBox wholeUI = new HBox(40,tpMapUI, wlMapUI);
@@ -252,11 +271,86 @@ public class App extends Application {
             }
         });
 
-        GridChanger(this.board, engine, this.teleportMap);
-        GridChanger(this.walledBoard, walledEngine, this.walledMap);
+        changeGrid(this.board, engine, this.teleportMap);
+        changeGrid(this.walledBoard, walledEngine, this.walledMap);
     }
 
-    public void GridChanger(GridPane grid, SimulationEngine engine, IWorldMap map) {
+    public void initializeCharts(){
+        NumberAxis xAxisTP = new NumberAxis();
+        xAxisTP.setLabel("Day");
+
+        NumberAxis yAxisTP = new NumberAxis();
+        yAxisTP.setLabel("Statistic");
+
+        this.teleportMapChart = new LineChart<>(xAxisTP,yAxisTP);
+        teleportMapChart.setCreateSymbols(false);
+
+        this.aliveAnimalsTP.getData().add(new XYChart.Data<>(0,startingAnimals));
+        this.aliveAnimalsTP.setName("Alive animals");
+
+        this.aliveGrassTP.getData().add(new XYChart.Data<>(0,0));
+        this.aliveGrassTP.setName("Present Grass");
+
+        this.averageEnergyTP.getData().add(new XYChart.Data<>(0,startEnergy));
+        this.averageEnergyTP.setName("Average Energy");
+
+        this.averageChildrenAmountTP.getData().add(new XYChart.Data<>(0,0));
+        this.averageChildrenAmountTP.setName("Average Children Amount");
+
+        this.averageDaysLivedTP.getData().add(new XYChart.Data<>(0,0));
+        this.averageDaysLivedTP.setName("Average Life Length");
+
+
+        this.walledMapChart = new LineChart<>(xAxisTP,yAxisTP);
+        walledMapChart.setCreateSymbols(false);
+
+        this.aliveAnimalsWL.getData().add(new XYChart.Data<>(0,startingAnimals));
+        this.aliveAnimalsWL.setName("Alive animals");
+
+        this.aliveGrassWL.getData().add(new XYChart.Data<>(0,0));
+        this.aliveGrassWL.setName("Present Grass");
+
+        this.averageEnergyWL.getData().add(new XYChart.Data<>(0,startEnergy));
+        this.averageEnergyWL.setName("Average Energy");
+
+        this.averageChildrenAmountWL.getData().add(new XYChart.Data<>(0,0));
+        this.averageChildrenAmountWL.setName("Average Children Amount");
+
+        this.averageDaysLivedWL.getData().add(new XYChart.Data<>(0,0));
+        this.averageDaysLivedWL.setName("Average Life Length");
+
+
+        teleportMapChart.getData().add(aliveAnimalsTP);
+        teleportMapChart.getData().add(aliveGrassTP);
+        teleportMapChart.getData().add(averageEnergyTP);
+        teleportMapChart.getData().add(averageChildrenAmountTP);
+        teleportMapChart.getData().add(averageDaysLivedTP);
+
+        walledMapChart.getData().add(aliveAnimalsWL);
+        walledMapChart.getData().add(aliveGrassWL);
+        walledMapChart.getData().add(averageEnergyWL);
+        walledMapChart.getData().add(averageChildrenAmountWL);
+        walledMapChart.getData().add(averageDaysLivedWL);
+    }
+
+    public void updateChart(SimulationEngine engine, IWorldMap map){
+        if (map.getTeleportValue()) {
+            this.aliveAnimalsTP.getData().add(new XYChart.Data<>(engine.getDay(),map.countAnimals()));
+            this.aliveGrassTP.getData().add(new XYChart.Data<>(engine.getDay(),map.countGrass()));
+            this.averageEnergyTP.getData().add(new XYChart.Data<>(engine.getDay(),map.getAverageEnergy()));
+            this.averageChildrenAmountTP.getData().add(new XYChart.Data<>(engine.getDay(), map.getAverageChildren()));
+            this.averageDaysLivedTP.getData().add(new XYChart.Data<>(engine.getDay(), engine.getAverageLifeLength()));
+        } else{
+            this.aliveAnimalsWL.getData().add(new XYChart.Data<>(engine.getDay(),map.countAnimals()));
+            this.aliveGrassWL.getData().add(new XYChart.Data<>(engine.getDay(),map.countGrass()));
+            this.averageEnergyWL.getData().add(new XYChart.Data<>(engine.getDay(),map.getAverageEnergy()));
+            this.averageChildrenAmountWL.getData().add(new XYChart.Data<>(engine.getDay(), map.getAverageChildren()));
+            this.averageDaysLivedWL.getData().add(new XYChart.Data<>(engine.getDay(), engine.getAverageLifeLength()));
+        }
+    }
+    
+
+    public void changeGrid(GridPane grid, SimulationEngine engine, IWorldMap map) {
 
         engine.resetUpdateStatus();
 
@@ -304,27 +398,28 @@ public class App extends Application {
 
     public void simulation(SimulationEngine engine, GridPane grid, IWorldMap map) {
         //diagnostic print
-        System.out.println("THE SIMULATION HAS STARTED");
+        //System.out.println("THE SIMULATION HAS STARTED");
 
         Thread thread = new Thread(() -> {
             while(true) {
 
                 try {
-                    Thread.sleep(400);
+                    Thread.sleep(300);
                 } catch (InterruptedException ex) {
                     System.out.println("THREAD WAS INTERRUPTED");
                 }
 
                 if (engine.getUpdateStatus()) {
                     //diagnostic print
-                    System.out.println("THE GRID CHANGE OCCURS");
+                    //System.out.println("THE GRID CHANGE OCCURS");
 
                     Platform.runLater(() -> {
                         grid.setGridLinesVisible(false);
                         grid.getColumnConstraints().clear();
                         grid.getRowConstraints().clear();
                         grid.getChildren().clear();
-                        GridChanger(grid, engine, map);
+                        changeGrid(grid, engine, map);
+                        updateChart( engine, map); //temporary
                         grid.setGridLinesVisible(true);
                     });
 
@@ -337,7 +432,7 @@ public class App extends Application {
     @Override
     public void stop(){
         System.out.println("THE VISUALIZATION WINDOW WAS CLOSED");
-        System.exit(0); //temporary adaptation
+        System.exit(0);
     }
 }
 
