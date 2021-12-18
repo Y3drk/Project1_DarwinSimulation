@@ -7,10 +7,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -23,6 +20,8 @@ import java.util.Map;
 
 public class App extends Application {
     protected GridPane board = new GridPane();
+    protected GridPane walledBoard = new GridPane();
+
     protected Scene simulationScene;
     protected Scene parametersScene;
 
@@ -30,11 +29,17 @@ public class App extends Application {
     protected Vector2d bottomLeft;
 
     protected IWorldMap teleportMap;
+    protected IWorldMap walledMap;
 
     protected Thread engineThread;
+    protected Thread walledEngineThread;
+
+
     protected SimulationEngine engine;
+    protected SimulationEngine walledEngine;
 
     protected boolean ifTeleportMapStopped = false;
+    protected boolean ifWalledMapStopped = false;
 
     protected int startingAnimals;
     protected int width;
@@ -44,6 +49,8 @@ public class App extends Application {
 
     //simulation parameters
     protected boolean isMagicalForTeleported;
+    protected boolean isMagicalForWalled;
+
     protected int startEnergy;
     protected int moveEnergyCost;
     protected int eatingGrassEnergyProfit;
@@ -148,6 +155,8 @@ public class App extends Application {
 
                 //simulation parameters
                 this.isMagicalForTeleported = isTeleportMapMagical.isSelected();
+                this.isMagicalForWalled = isWallMapMagical.isSelected();
+
                 this.startEnergy = Integer.parseInt(mapStartEnergy.getText());
                 this.moveEnergyCost = Integer.parseInt(mapMoveEnergy.getText());
                 this.eatingGrassEnergyProfit = Integer.parseInt(mapEatingEnergyProfit.getText());
@@ -158,8 +167,10 @@ public class App extends Application {
             }
 
             IWorldMap map = new UniversalMap(width,height,jungleToSteppeRatio, teleportEnabled, startEnergy,moveEnergyCost,eatingGrassEnergyProfit,startingAnimals);
+            IWorldMap walledMap = new UniversalMap(width,height,jungleToSteppeRatio, !teleportEnabled, startEnergy,moveEnergyCost,eatingGrassEnergyProfit,startingAnimals);
 
             this.teleportMap = map;
+            this.walledMap = walledMap;
 
             //diagnostic prints
             System.out.println("MAP AT DAY 0");
@@ -170,38 +181,58 @@ public class App extends Application {
             bottomLeft = map.getCorners()[0];
 
             this.engine = new SimulationEngine(map,isMagicalForTeleported);
+            this.walledEngine = new SimulationEngine(walledMap,isMagicalForWalled);
 
-            //------------------------
             InitializeSimulationScene();
             primaryStage.setScene(simulationScene);
             this.engineThread = new Thread(engine);
+            this.walledEngineThread = new Thread(walledEngine);
+
             engineThread.start();
-            simulation();
+            walledEngineThread.start();
+
+            simulation(this.engine, this.board, this.teleportMap);
+            simulation(this.walledEngine, this.walledBoard, this.walledMap);
         });
     }
 
     public void InitializeSimulationScene(){
-        upperRight = this.teleportMap.getCorners()[1];
-        bottomLeft = this.teleportMap.getCorners()[0];
-
-
-        Button startStopButton = new Button("Start/Stop");
+        Button startStopButtonTP = new Button("Start/Stop TP");
+        Button startStopButtonWL = new Button("Start/Stop WL");
 
         //maybe scrollboard will be added later
-        //ScrollPane scrollForBoard = new ScrollPane();
-        //scrollForBoard.setContent(this.board);
+        ScrollPane scrollForTPBoard = new ScrollPane();
+        scrollForTPBoard.setContent(this.board);
+        scrollForTPBoard.setPrefViewportHeight(500);
+        scrollForTPBoard.setPrefViewportWidth(650);
 
-        VBox wholeUI = new VBox(10, this.board, startStopButton);
-        wholeUI.setAlignment(Pos.CENTER);
+        ScrollPane scrollForWLBoard = new ScrollPane();
+        scrollForWLBoard.setContent(this.walledBoard);
+        scrollForWLBoard.setPrefViewportHeight(500);
+        scrollForWLBoard.setPrefViewportWidth(650);
+
+        Label teleportMapLabel = new Label("TELEPORT MAP");
+        Label walledMapLabel = new Label("WALLED MAP");
+
         board.setPadding(new Insets(10, 20, 10, 100));
+        walledBoard.setPadding(new Insets(10, 20, 10, 100));
 
-        this.simulationScene = new Scene(wholeUI, 700, 750);
+        VBox tpMapUI = new VBox(10, teleportMapLabel, scrollForTPBoard, startStopButtonTP);
+        tpMapUI.setAlignment(Pos.CENTER);
 
-        startStopButton.setOnAction(event -> {
+        VBox wlMapUI = new VBox(10,walledMapLabel,scrollForWLBoard,startStopButtonWL);
+        wlMapUI.setAlignment(Pos.CENTER);
+
+        HBox wholeUI = new HBox(40,tpMapUI, wlMapUI);
+        wholeUI.setAlignment(Pos.CENTER);
+
+        this.simulationScene = new Scene(wholeUI, 1350, 800);
+
+        startStopButtonTP.setOnAction(event -> {
             if(ifTeleportMapStopped){
                 this.engineThread = new Thread(engine);
                 engineThread.start();
-                simulation();
+                simulation(this.engine, this.board, this.teleportMap);
                 this.ifTeleportMapStopped = false;
             } else {
                 this.engineThread.stop();
@@ -209,60 +240,31 @@ public class App extends Application {
             }
         });
 
-
-        //------------------------------------------------
-
-        board.getColumnConstraints().add(new ColumnConstraints(40));
-        board.getRowConstraints().add(new RowConstraints(40));
-        Label xyLabel = new Label("y/x");
-        board.add(xyLabel, 0, 0);
-        GridPane.setHalignment(xyLabel, HPos.CENTER);
-
-
-        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
-            Label axisLabel = new Label(Integer.toString(i + bottomLeft.x - 1));
-            board.getColumnConstraints().add(new ColumnConstraints(40));
-            board.add(axisLabel, i, 0);
-            GridPane.setHalignment(axisLabel, HPos.CENTER);
-
-        }
-
-        for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
-            Label axisLabel = new Label(Integer.toString(upperRight.y - j + 1));
-            board.add(axisLabel, 0, j);
-            board.getRowConstraints().add(new RowConstraints(40));
-            GridPane.setHalignment(axisLabel, HPos.CENTER);
-        }
-        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
-            for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
-
-                Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
-
-                if (this.teleportMap.isOccupied(testedPos)) {
-                    GuiElementBox elem = new GuiElementBox((IMapElement) this.teleportMap.objectAt(testedPos), this.teleportMap, images);
-                    board.add(elem.verticalBox, i, j);
-                    GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
-
-                } else {
-                    GuiElementBox elem = new GuiElementBox(this.teleportMap, testedPos);
-                    board.add(elem.verticalBox, i, j);
-                    GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
-                }
+        startStopButtonWL.setOnAction(event -> {
+            if(ifWalledMapStopped){
+                this.walledEngineThread = new Thread(walledEngine);
+                walledEngineThread.start();
+                simulation(this.walledEngine, this.walledBoard, this.walledMap);
+                this.ifWalledMapStopped= false;
+            } else {
+                this.walledEngineThread.stop();
+                this.ifWalledMapStopped = true;
             }
-        }
+        });
 
-        board.setGridLinesVisible(true);
+        GridChanger(this.board, engine, this.teleportMap);
+        GridChanger(this.walledBoard, walledEngine, this.walledMap);
     }
 
-    public void GridChanger(GridPane grid) {
+    public void GridChanger(GridPane grid, SimulationEngine engine, IWorldMap map) {
 
-        this.engine.resetUpdateStatus();
+        engine.resetUpdateStatus();
 
         grid.getColumnConstraints().add(new ColumnConstraints(40));
         grid.getRowConstraints().add(new RowConstraints(40));
 
         Label xyLabel = new Label("y/x");
-        board.add(xyLabel, 0, 0);
+        grid.add(xyLabel, 0, 0);
         GridPane.setHalignment(xyLabel, HPos.CENTER);
 
 
@@ -283,14 +285,14 @@ public class App extends Application {
         for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
             for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
                 Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
-                if (this.teleportMap.isOccupied(testedPos)) {
+                if (map.isOccupied(testedPos)) {
 
-                    GuiElementBox elem = new GuiElementBox((IMapElement) this.teleportMap.objectAt(testedPos), this.teleportMap, images);
+                    GuiElementBox elem = new GuiElementBox((IMapElement) map.objectAt(testedPos), map, images);
                     grid.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
 
                 } else {
-                    GuiElementBox elem = new GuiElementBox(this.teleportMap, testedPos);
+                    GuiElementBox elem = new GuiElementBox(map, testedPos);
                     grid.add(elem.verticalBox, i, j);
                     GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
                 }
@@ -300,7 +302,7 @@ public class App extends Application {
         grid.setGridLinesVisible(true);
     }
 
-    public void simulation() {
+    public void simulation(SimulationEngine engine, GridPane grid, IWorldMap map) {
         //diagnostic print
         System.out.println("THE SIMULATION HAS STARTED");
 
@@ -308,22 +310,22 @@ public class App extends Application {
             while(true) {
 
                 try {
-                    Thread.sleep(300);
+                    Thread.sleep(400);
                 } catch (InterruptedException ex) {
                     System.out.println("THREAD WAS INTERRUPTED");
                 }
 
-                if (this.engine.getUpdateStatus()) {
+                if (engine.getUpdateStatus()) {
                     //diagnostic print
                     System.out.println("THE GRID CHANGE OCCURS");
 
                     Platform.runLater(() -> {
-                        board.setGridLinesVisible(false);
-                        board.getColumnConstraints().clear();
-                        board.getRowConstraints().clear();
-                        board.getChildren().clear();
-                        GridChanger(this.board);
-                        board.setGridLinesVisible(true);
+                        grid.setGridLinesVisible(false);
+                        grid.getColumnConstraints().clear();
+                        grid.getRowConstraints().clear();
+                        grid.getChildren().clear();
+                        GridChanger(grid, engine, map);
+                        grid.setGridLinesVisible(true);
                     });
 
                 }
