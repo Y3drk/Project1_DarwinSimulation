@@ -325,9 +325,7 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
 //        System.out.println("----------------");
     }
 
-    public boolean getTeleportValue() {
-        return this.teleportEnabled;
-    }
+    public boolean getTeleportValue() {return this.teleportEnabled;}
 
     public Vector2d[] getJungleCorners() {return new Vector2d[] {this.bottomLeftJungleCorner, this.upperRightJungleCorner};}
 
@@ -345,6 +343,29 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
             childrenSum += animal.children;
         }
         return childrenSum / animalStash.size();
+    }
+
+    public Genome getDominantGenome() {
+        Map<Genome,Integer> genotypes = new HashMap<>();
+        for (Animal animal: animalStash) {
+           if (genotypes.containsKey(animal.genotype)) {
+               int occurrences = genotypes.get(animal.genotype);
+               genotypes.put(animal.genotype, occurrences+1);
+           } else {
+               genotypes.put(animal.genotype, 1);
+           }
+        }
+        int biggest = 0;
+        Genome dominant = new Genome();
+
+        for (Map.Entry<Genome, Integer> entry : genotypes.entrySet()){
+            int amountOfGenotypes = entry.getValue();
+            if (amountOfGenotypes > biggest){
+                biggest = amountOfGenotypes;
+                dominant = entry.getKey();
+            }
+        }
+        return dominant;
     }
 
     @Override //used purely for testing purposes

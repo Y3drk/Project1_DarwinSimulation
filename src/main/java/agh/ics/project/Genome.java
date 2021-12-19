@@ -1,22 +1,42 @@
 package agh.ics.project;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Random;
 
 public class Genome {
 
-    private static Random randomGenerator = new Random();
-    private ArrayList<Integer> genotype = new ArrayList<>();
+    private static final Random randomGenerator = new Random();
+    private final ArrayList<Integer> genotype = new ArrayList<>();
 
-    //constructor for Adams and Eves or magicaly spawned animals
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Genome genome = (Genome) o;
+        return genotype.equals(genome.genotype);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(genotype);
+    }
+
+    //constructor for Adams and Eves or magically spawned animals
     public Genome(){
         for (int i = 0 ; i < 32; i++){
             genotype.add(randomGenerator.nextInt(8));
         }
+        Collections.sort(genotype);
     }
 
     public int getRandomGen() {
         return genotype.get(randomGenerator.nextInt(32));
+    }
+
+    public String toString() {
+        return this.genotype.toString();
     }
 
 

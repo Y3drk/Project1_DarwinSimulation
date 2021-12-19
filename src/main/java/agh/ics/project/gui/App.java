@@ -75,6 +75,14 @@ public class App extends Application {
     protected XYChart.Series<Number,Number> averageChildrenAmountWL = new XYChart.Series<>();
     protected XYChart.Series<Number,Number> averageDaysLivedWL = new XYChart.Series<>();
 
+    //dominant genome
+    protected Label displayedGenomeTP;
+    protected HBox dominantGenomeTP;
+
+
+    protected Label displayedGenomeWL;
+    protected HBox dominantGenomeWL;
+
     public void init() {
         try {
             images.put("src/main/resources/algs.png", new Image(new FileInputStream("src/main/resources/algs.png")));
@@ -231,15 +239,17 @@ public class App extends Application {
         Label teleportMapLabel = new Label("TELEPORT MAP");
         Label walledMapLabel = new Label("WALLED MAP");
 
-        board.setPadding(new Insets(10, 20, 10, 100));
-        walledBoard.setPadding(new Insets(10, 20, 10, 100));
+        board.setPadding(new Insets(10, 10, 10, 10));
+        walledBoard.setPadding(new Insets(10, 10, 10, 10));
+
+        initializeDominant();
 
         initializeCharts();
 
-        VBox tpMapUI = new VBox(10, teleportMapLabel, scrollForTPBoard, startStopButtonTP, teleportMapChart);
+        VBox tpMapUI = new VBox(10, teleportMapLabel, scrollForTPBoard, startStopButtonTP, dominantGenomeTP, teleportMapChart);
         tpMapUI.setAlignment(Pos.CENTER);
 
-        VBox wlMapUI = new VBox(10,walledMapLabel,scrollForWLBoard,startStopButtonWL, walledMapChart);
+        VBox wlMapUI = new VBox(10,walledMapLabel,scrollForWLBoard,startStopButtonWL,dominantGenomeWL, walledMapChart);
         wlMapUI.setAlignment(Pos.CENTER);
 
         HBox wholeUI = new HBox(40,tpMapUI, wlMapUI);
@@ -254,8 +264,8 @@ public class App extends Application {
                 simulation(this.engine, this.board, this.teleportMap);
                 this.ifTeleportMapStopped = false;
             } else {
-                this.engineThread.stop();
-                this.ifTeleportMapStopped = true;
+                    this.engineThread.stop();
+                    this.ifTeleportMapStopped = true;
             }
         });
 
@@ -266,8 +276,10 @@ public class App extends Application {
                 simulation(this.walledEngine, this.walledBoard, this.walledMap);
                 this.ifWalledMapStopped= false;
             } else {
-                this.walledEngineThread.stop();
-                this.ifWalledMapStopped = true;
+                synchronized (this) {
+                    this.walledEngineThread.stop();
+                    this.ifWalledMapStopped = true;
+                }
             }
         });
 
@@ -281,6 +293,12 @@ public class App extends Application {
 
         NumberAxis yAxisTP = new NumberAxis();
         yAxisTP.setLabel("Statistic");
+
+        NumberAxis xAxisWL = new NumberAxis();
+        xAxisWL.setLabel("Day");
+
+        NumberAxis yAxisWL = new NumberAxis();
+        yAxisWL.setLabel("Statistic");
 
         this.teleportMapChart = new LineChart<>(xAxisTP,yAxisTP);
         teleportMapChart.setCreateSymbols(false);
@@ -301,7 +319,7 @@ public class App extends Application {
         this.averageDaysLivedTP.setName("Average Life Length");
 
 
-        this.walledMapChart = new LineChart<>(xAxisTP,yAxisTP);
+        this.walledMapChart = new LineChart<>(xAxisWL,yAxisWL);
         walledMapChart.setCreateSymbols(false);
 
         this.aliveAnimalsWL.getData().add(new XYChart.Data<>(0,startingAnimals));
@@ -347,6 +365,34 @@ public class App extends Application {
             this.averageChildrenAmountWL.getData().add(new XYChart.Data<>(engine.getDay(), map.getAverageChildren()));
             this.averageDaysLivedWL.getData().add(new XYChart.Data<>(engine.getDay(), engine.getAverageLifeLength()));
         }
+    }
+
+    public void initializeDominant(){
+        Label dominantLabelTP = new Label("Dominant Genome:");
+        this.displayedGenomeTP = new Label ("No dominant genome yet");
+        this.dominantGenomeTP = new HBox(10, dominantLabelTP, displayedGenomeTP);
+        dominantGenomeTP.setAlignment(Pos.CENTER);
+
+        Label dominantLabelWL = new Label("Dominant Genome:");
+        this.displayedGenomeWL = new Label ("No dominant genome yet");
+        this.dominantGenomeWL = new HBox(10, dominantLabelWL, displayedGenomeWL);
+        dominantGenomeWL.setAlignment(Pos.CENTER);
+
+    }
+
+    public void updateDominant(IWorldMap map){
+        if (map.getTeleportValue()) {
+            this.dominantGenomeTP.getChildren().remove(displayedGenomeTP);
+
+            this.displayedGenomeTP = new Label(map.getDominantGenome().toString());
+            this.dominantGenomeTP.getChildren().add(this.displayedGenomeTP);
+
+        } else{
+            this.dominantGenomeWL.getChildren().remove(displayedGenomeWL);
+
+            this.displayedGenomeWL = new Label(map.getDominantGenome().toString());
+            this.dominantGenomeWL.getChildren().add(this.displayedGenomeWL);
+   }
     }
     
 
@@ -410,19 +456,16 @@ public class App extends Application {
                 }
 
                 if (engine.getUpdateStatus()) {
-                    //diagnostic print
-                    //System.out.println("THE GRID CHANGE OCCURS");
-
                     Platform.runLater(() -> {
                         grid.setGridLinesVisible(false);
                         grid.getColumnConstraints().clear();
                         grid.getRowConstraints().clear();
                         grid.getChildren().clear();
                         changeGrid(grid, engine, map);
-                        updateChart( engine, map); //temporary
+                        updateChart(engine, map);
+                        updateDominant(map);
                         grid.setGridLinesVisible(true);
                     });
-
                 }
             }
         });

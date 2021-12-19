@@ -134,6 +134,7 @@ public class Animal implements IMapElement, Comparable<Animal> {
                 //diagnostic prints
                 //System.out.println("CALCULATED NEW POSITION: "+ newPosition.toString());
                 //System.out.println("IF ANIMAL CAN MOVE THERE:" + this.map.canMoveTo(newPosition));
+                //System.out.println(this.genotype.toString());
 
                 if (this.map.canMoveTo(newPosition)) {
                     this.position = newPosition;
@@ -183,7 +184,6 @@ public class Animal implements IMapElement, Comparable<Animal> {
         return -Integer.compare(this.energy, o.energy); //"- " because we want our order to be descending
     }
 
-    //servicing observers
     public void addObserver(IPositionChangeObserver observer) {
         this.observers.add(observer);
     }
@@ -191,6 +191,8 @@ public class Animal implements IMapElement, Comparable<Animal> {
     public void removeObserver(IPositionChangeObserver observer) {
         this.observers.remove(observer);
     } //may prove useless
+
+    public Genome getGenome() {return this.genotype;}
 
     public void positionChanged(Vector2d oldPosition, Vector2d newPosition){
         for (IPositionChangeObserver obs : observers) {

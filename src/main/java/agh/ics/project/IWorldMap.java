@@ -117,6 +117,12 @@ public interface IWorldMap {
      */
     int getAverageChildren();
 
+    /** returns the dominant genotype of living animals
+     * @return as described
+     * no parameters
+     */
+    Genome getDominantGenome();
+
     /** implementing the magical strategy
      * return type: void
      * no parameters

@@ -11,6 +11,7 @@ public class SimulationEngine implements Runnable {
     protected int totalDeaths = 0;
 
     protected boolean ifUpdate = false;
+    protected static int moveDelay = 300;
 
     public SimulationEngine(IWorldMap map, boolean isMagical){
         this.map = map;
@@ -23,7 +24,8 @@ public class SimulationEngine implements Runnable {
 
 
     public void run() {
-        while (this.map.countAnimals() > 0) {
+        while (this.map.countAnimals()>0) {
+            try {
             this.days++;
             int[] temporary = this.map.removeDeadAnimals();
             totalDeaths += temporary[0];
@@ -50,8 +52,10 @@ public class SimulationEngine implements Runnable {
             }
 
             this.ifUpdate = true;
-            try {
-                Thread.sleep(300);
+
+                Thread.sleep(moveDelay);
+                //System.out.println(Thread.interrupted());
+                System.out.println("----------");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

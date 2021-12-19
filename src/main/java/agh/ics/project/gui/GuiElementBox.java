@@ -4,7 +4,6 @@ package agh.ics.project.gui;
 import agh.ics.project.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -13,12 +12,9 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.Map;
 
 public class GuiElementBox {
-    //for now it's in state in which I left it after labs -> we will change a few thing along the way (turtle brightness, labels and so on)
 
     Image image;
     ImageView imageView;
