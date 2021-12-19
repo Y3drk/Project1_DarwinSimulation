@@ -13,6 +13,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.io.FileInputStream;
@@ -79,9 +80,11 @@ public class App extends Application {
     protected Label displayedGenomeTP;
     protected HBox dominantGenomeTP;
 
-
     protected Label displayedGenomeWL;
     protected HBox dominantGenomeWL;
+
+    protected Genome currentDominantTP;
+    protected Genome currentDominantWL;
 
     public void init() {
         try {
@@ -225,6 +228,9 @@ public class App extends Application {
         Button startStopButtonTP = new Button("Start/Stop TP");
         Button startStopButtonWL = new Button("Start/Stop WL");
 
+        Button highlightDominateGenomTP = new Button("Highlight Dominating Genom");
+        Button highlightDominateGenomWL = new Button("Highlight Dominating Genom");
+
         //maybe scrollboard will be added later
         ScrollPane scrollForTPBoard = new ScrollPane();
         scrollForTPBoard.setContent(this.board);
@@ -233,11 +239,17 @@ public class App extends Application {
 
         ScrollPane scrollForWLBoard = new ScrollPane();
         scrollForWLBoard.setContent(this.walledBoard);
-        scrollForWLBoard.setPrefViewportHeight(500);
-        scrollForWLBoard.setPrefViewportWidth(650);
+        scrollForWLBoard.setPrefViewportHeight(550);
+        scrollForWLBoard.setPrefViewportWidth(550);
 
         Label teleportMapLabel = new Label("TELEPORT MAP");
         Label walledMapLabel = new Label("WALLED MAP");
+
+        HBox buttonsTP = new HBox(10,startStopButtonTP, highlightDominateGenomTP);
+        buttonsTP.setAlignment(Pos.CENTER);
+
+        HBox buttonsWL = new HBox(10,startStopButtonWL, highlightDominateGenomWL);
+        buttonsWL.setAlignment(Pos.CENTER);
 
         board.setPadding(new Insets(10, 10, 10, 10));
         walledBoard.setPadding(new Insets(10, 10, 10, 10));
@@ -246,10 +258,10 @@ public class App extends Application {
 
         initializeCharts();
 
-        VBox tpMapUI = new VBox(10, teleportMapLabel, scrollForTPBoard, startStopButtonTP, dominantGenomeTP, teleportMapChart);
+        VBox tpMapUI = new VBox(10, teleportMapLabel, scrollForTPBoard, buttonsTP, dominantGenomeTP, teleportMapChart);
         tpMapUI.setAlignment(Pos.CENTER);
 
-        VBox wlMapUI = new VBox(10,walledMapLabel,scrollForWLBoard,startStopButtonWL,dominantGenomeWL, walledMapChart);
+        VBox wlMapUI = new VBox(10,walledMapLabel,scrollForWLBoard,buttonsWL,dominantGenomeWL, walledMapChart);
         wlMapUI.setAlignment(Pos.CENTER);
 
         HBox wholeUI = new HBox(40,tpMapUI, wlMapUI);
@@ -269,6 +281,17 @@ public class App extends Application {
             }
         });
 
+        highlightDominateGenomTP.setOnAction(event -> {
+            if (ifTeleportMapStopped){
+                board.setGridLinesVisible(false);
+                board.getColumnConstraints().clear();
+                board.getRowConstraints().clear();
+                board.getChildren().clear();
+                highlightDominant(board, teleportMap, true);
+                board.setGridLinesVisible(true);
+            }
+        });
+
         startStopButtonWL.setOnAction(event -> {
             if(ifWalledMapStopped){
                 this.walledEngineThread = new Thread(walledEngine);
@@ -280,6 +303,17 @@ public class App extends Application {
                     this.walledEngineThread.stop();
                     this.ifWalledMapStopped = true;
                 }
+            }
+        });
+
+        highlightDominateGenomWL.setOnAction(event -> {
+            if (ifWalledMapStopped){
+                walledBoard.setGridLinesVisible(false);
+                walledBoard.getColumnConstraints().clear();
+                walledBoard.getRowConstraints().clear();
+                walledBoard.getChildren().clear();
+                highlightDominant(walledBoard, walledMap, false);
+                walledBoard.setGridLinesVisible(true);
             }
         });
 
@@ -384,17 +418,71 @@ public class App extends Application {
         if (map.getTeleportValue()) {
             this.dominantGenomeTP.getChildren().remove(displayedGenomeTP);
 
-            this.displayedGenomeTP = new Label(map.getDominantGenome().toString());
+            this.currentDominantTP = map.getDominantGenome();
+            this.displayedGenomeTP = new Label(this.currentDominantTP.toString());
             this.dominantGenomeTP.getChildren().add(this.displayedGenomeTP);
 
         } else{
             this.dominantGenomeWL.getChildren().remove(displayedGenomeWL);
 
-            this.displayedGenomeWL = new Label(map.getDominantGenome().toString());
+            this.currentDominantWL = map.getDominantGenome();
+            this.displayedGenomeWL = new Label(this.currentDominantWL.toString());
             this.dominantGenomeWL.getChildren().add(this.displayedGenomeWL);
    }
     }
-    
+
+    public void highlightDominant(GridPane grid, IWorldMap map, boolean which){
+
+        grid.getColumnConstraints().add(new ColumnConstraints(40));
+        grid.getRowConstraints().add(new RowConstraints(40));
+
+        Label xyLabel = new Label("y/x");
+        grid.add(xyLabel, 0, 0);
+        GridPane.setHalignment(xyLabel, HPos.CENTER);
+
+
+        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
+            Label axisLabel = new Label(Integer.toString(i + bottomLeft.x - 1));
+            grid.getColumnConstraints().add(new ColumnConstraints(40));
+            grid.add(axisLabel, i, 0);
+            GridPane.setHalignment(axisLabel, HPos.CENTER);
+
+        }
+
+        for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
+            Label axisLabel = new Label(Integer.toString(upperRight.y - j + 1));
+            grid.add(axisLabel, 0, j);
+            grid.getRowConstraints().add(new RowConstraints(40));
+            GridPane.setHalignment(axisLabel, HPos.CENTER);
+        }
+        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
+            for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
+                Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
+                if (map.isOccupied(testedPos)) {
+                    var lifeform = map.objectAt(testedPos);
+                    GuiElementBox elem = new GuiElementBox((IMapElement) lifeform, map, images);
+                    grid.add(elem.verticalBox, i, j);
+                    GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
+
+                    if (which) {
+                        if (lifeform instanceof Animal && ((Animal) lifeform).getGenome().equals(this.currentDominantTP)) {
+                            elem.verticalBox.setBackground(new Background(new BackgroundFill(Color.LIME, CornerRadii.EMPTY, Insets.EMPTY)));
+                        }
+                    } else {
+                        if (lifeform instanceof Animal && ((Animal) lifeform).getGenome().equals(this.currentDominantWL)) {
+                            elem.verticalBox.setBackground(new Background(new BackgroundFill(Color.LIME, CornerRadii.EMPTY, Insets.EMPTY)));
+                        }
+                    }
+
+                } else {
+                    GuiElementBox elem = new GuiElementBox(map, testedPos);
+                    grid.add(elem.verticalBox, i, j);
+                    GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
+                }
+            }
+        }
+        grid.setGridLinesVisible(true);
+    }
 
     public void changeGrid(GridPane grid, SimulationEngine engine, IWorldMap map) {
 
