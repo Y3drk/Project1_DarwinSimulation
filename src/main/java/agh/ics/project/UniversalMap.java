@@ -188,22 +188,20 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
                     ArrayList<Animal> potentialParents = new ArrayList<>();
                     potentialParents.add(listOfAnimals.get(0));
                     int topEnergy = listOfAnimals.get(0).energy;
-                    int ind = 1;
-                    boolean flag = true;
-                    int differentEnergies = 1;
 
-                    while (flag && ind < listOfAnimals.size() && differentEnergies < 2){
-                        Animal otherParent = listOfAnimals.get(ind);
-                        if (otherParent.energy < this.reproductionEnergyCost) flag = false;
-                        else if (otherParent.energy < topEnergy && potentialParents.size() < 2) {
-                            differentEnergies = 2;
+                    for (int i=1; i< listOfAnimals.size(); i++){
+                        Animal otherParent = listOfAnimals.get(i);
+
+                        if (otherParent.energy < this.reproductionEnergyCost) break;
+                        else if (otherParent.energy < topEnergy && potentialParents.size() == 1){
+                            potentialParents.add(otherParent);
+                            break;
+                        } else if (otherParent.energy == topEnergy) {
                             potentialParents.add(otherParent);
                         }
-                        else if (otherParent.energy == topEnergy) {
-                            potentialParents.add(otherParent);
-                            ind++;
-                        }
+
                     }
+
                     if (potentialParents.size() == 2){
                         Animal child = potentialParents.get(0).reproduce(potentialParents.get(1));
                         potentialParents.get(0).children += 1;
@@ -233,12 +231,8 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
                 }
             }
         });
-
         for (Animal child: children) {
             this.place(child);
-
-            //diagnostic prints
-            //System.out.println("A CHILD WAS BORN ON FIELD" + child.getPosition() + " AND HAS: " + child.energy + " ENERGY");
         }
     }
 

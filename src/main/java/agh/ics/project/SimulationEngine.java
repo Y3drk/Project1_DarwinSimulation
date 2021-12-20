@@ -25,40 +25,38 @@ public class SimulationEngine implements Runnable {
 
     public void run() {
         while (this.map.countAnimals()>0) {
-            try {
-            this.days++;
-            int[] temporary = this.map.removeDeadAnimals();
-            totalDeaths += temporary[0];
-            daysLived += temporary[1];
+                this.days++;
+                int[] temporary = this.map.removeDeadAnimals();
+                totalDeaths += temporary[0];
+                daysLived += temporary[1];
 
-            this.map.moveAllAnimals();
+                this.map.moveAllAnimals();
 
-            this.map.eatingGrass();
+                this.map.eatingGrass();
 
-            this.map.reproduction();
+                this.map.reproduction();
 
-            this.map.AddNewGrass();
+                this.map.AddNewGrass();
 
-            //diagnostic prints
+                //diagnostic prints
 //            System.out.println("AFTER DAY NUMBER: " + days);
 //            System.out.println("TOTAL NUMBER OF DEAD ANIMALS: " + totalDeaths);
 //            System.out.println("NUMBER OF ALIVE ANIMALS: " + this.map.countAnimals());
 //            System.out.println(this.map);
 //            System.out.println("----------------------");
 
-            if (isMagical && this.map.countAnimals() == 5 && this.magicMiracles > 0){
-                this.magicMiracles--;
-                this.map.cloneAnimals();
-            }
+                if (isMagical && this.map.countAnimals() == 5 && this.magicMiracles > 0) {
+                    this.magicMiracles--;
+                    this.map.cloneAnimals();
+                }
 
-            this.ifUpdate = true;
+                this.ifUpdate = true;
 
-                Thread.sleep(moveDelay);
-                //System.out.println(Thread.interrupted());
-                System.out.println("----------");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+                try {
+                    Thread.sleep(moveDelay);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
         }
     }
 

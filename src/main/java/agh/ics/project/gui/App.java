@@ -49,7 +49,7 @@ public class App extends Application {
     protected int width;
     protected int height;
 
-    protected Map<String, Image> images = new HashMap<>(); //TO DO - to not reload every image in every refresh
+    protected Map<String, Image> images = new HashMap<>();
 
     //simulation parameters
     protected boolean isMagicalForTeleported;
@@ -85,6 +85,9 @@ public class App extends Application {
 
     protected Genome currentDominantTP;
     protected Genome currentDominantWL;
+
+    protected boolean genomeHighlightedTP = false;
+    protected boolean genomeHighlightedWL = false;
 
     public void init() {
         try {
@@ -281,14 +284,27 @@ public class App extends Application {
             }
         });
 
+
         highlightDominateGenomTP.setOnAction(event -> {
-            if (ifTeleportMapStopped){
-                board.setGridLinesVisible(false);
-                board.getColumnConstraints().clear();
-                board.getRowConstraints().clear();
-                board.getChildren().clear();
-                highlightDominant(board, teleportMap, true);
-                board.setGridLinesVisible(true);
+            if (ifTeleportMapStopped) {
+                if (!genomeHighlightedTP) {
+                    board.setGridLinesVisible(false);
+                    board.getColumnConstraints().clear();
+                    board.getRowConstraints().clear();
+                    board.getChildren().clear();
+                    highlightDominant(board, teleportMap, true);
+                    board.setGridLinesVisible(true);
+                    genomeHighlightedTP = true;
+                }
+                else {
+                    board.setGridLinesVisible(false);
+                    board.getColumnConstraints().clear();
+                    board.getRowConstraints().clear();
+                    board.getChildren().clear();
+                    changeGrid(board,engine,teleportMap);
+                    board.setGridLinesVisible(true);
+                    genomeHighlightedTP = false;
+                }
             }
         });
 
@@ -307,13 +323,24 @@ public class App extends Application {
         });
 
         highlightDominateGenomWL.setOnAction(event -> {
-            if (ifWalledMapStopped){
-                walledBoard.setGridLinesVisible(false);
-                walledBoard.getColumnConstraints().clear();
-                walledBoard.getRowConstraints().clear();
-                walledBoard.getChildren().clear();
-                highlightDominant(walledBoard, walledMap, false);
-                walledBoard.setGridLinesVisible(true);
+            if (ifWalledMapStopped) {
+                if (!genomeHighlightedWL) {
+                    walledBoard.setGridLinesVisible(false);
+                    walledBoard.getColumnConstraints().clear();
+                    walledBoard.getRowConstraints().clear();
+                    walledBoard.getChildren().clear();
+                    highlightDominant(walledBoard, walledMap, false);
+                    walledBoard.setGridLinesVisible(true);
+                    genomeHighlightedWL = true;
+                } else {
+                    walledBoard.setGridLinesVisible(false);
+                    walledBoard.getColumnConstraints().clear();
+                    walledBoard.getRowConstraints().clear();
+                    walledBoard.getChildren().clear();
+                    changeGrid(walledBoard,walledEngine,walledMap);
+                    walledBoard.setGridLinesVisible(true);
+                    genomeHighlightedWL = false;
+                }
             }
         });
 
