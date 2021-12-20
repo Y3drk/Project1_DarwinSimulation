@@ -5,6 +5,7 @@ public class SimulationEngine implements Runnable {
 
     protected boolean isMagical;
     protected int magicMiracles;
+    protected boolean didMiracleHappen = false;
 
     protected int days = -1;
     protected int daysLived = 0;
@@ -47,6 +48,7 @@ public class SimulationEngine implements Runnable {
 
                 if (isMagical && this.map.countAnimals() == 5 && this.magicMiracles > 0) {
                     this.magicMiracles--;
+                    this.didMiracleHappen = true;
                     this.map.cloneAnimals();
                 }
 
@@ -70,5 +72,15 @@ public class SimulationEngine implements Runnable {
         if (this.totalDeaths != 0) return (daysLived / totalDeaths);
         else return 0;
     }
+
+    public int getMagicMiraclesLeft(){
+        return this.magicMiracles;
+    }
+
+    public boolean getMagicStatus() {return this.isMagical;}
+
+    public boolean getMiracleStatus() {return this.didMiracleHappen;}
+
+    public void resetMiracleStatus() {this.didMiracleHappen = false;}
 }
 

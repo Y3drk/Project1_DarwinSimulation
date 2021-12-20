@@ -3,6 +3,8 @@ package agh.ics.project.gui;
 import agh.ics.project.*;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -51,7 +53,6 @@ public class App extends Application {
 
     protected Map<String, Image> images = new HashMap<>();
 
-    //simulation parameters
     protected boolean isMagicalForTeleported;
     protected boolean isMagicalForWalled;
 
@@ -61,7 +62,6 @@ public class App extends Application {
     protected double jungleToSteppeRatio;
     protected boolean teleportEnabled;
 
-    //data charts series
     protected LineChart<Number, Number> teleportMapChart;
     protected XYChart.Series<Number,Number> aliveAnimalsTP = new XYChart.Series<>();
     protected XYChart.Series<Number,Number> aliveGrassTP = new XYChart.Series<>();
@@ -88,6 +88,9 @@ public class App extends Application {
 
     protected boolean genomeHighlightedTP = false;
     protected boolean genomeHighlightedWL = false;
+
+    protected Alert magicTP;
+    protected Alert magicWL;
 
     public void init() {
         try {
@@ -228,6 +231,11 @@ public class App extends Application {
     }
 
     public void initializeSimulationScene(){
+
+        magicTP = new Alert(Alert.AlertType.CONFIRMATION);
+        magicWL = new Alert(Alert.AlertType.CONFIRMATION);
+
+
         Button startStopButtonTP = new Button("Start/Stop TP");
         Button startStopButtonWL = new Button("Start/Stop WL");
 
@@ -580,6 +588,17 @@ public class App extends Application {
                         updateChart(engine, map);
                         updateDominant(map);
                         grid.setGridLinesVisible(true);
+
+                        if(engine.getMagicStatus() && engine.getMiracleStatus()){
+                            if (map.getTeleportValue()) {
+                                magicTP.setContentText("Magic happened on teleport map. " + engine.getMagicMiraclesLeft() + " miracles left!");
+                                magicTP.show();
+                            } else {
+                                magicWL.setContentText("Magic happened on walled map. " + engine.getMagicMiraclesLeft() + " miracles left!");
+                                magicWL.show();
+                            }
+                            engine.resetMiracleStatus();
+                        }
                     });
                 }
             }
