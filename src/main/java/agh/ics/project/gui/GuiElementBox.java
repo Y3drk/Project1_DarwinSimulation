@@ -20,7 +20,7 @@ public class GuiElementBox {
     ImageView imageView;
     VBox verticalBox;
 
-    public GuiElementBox(IMapElement lifeform, IWorldMap map, Map<String,Image> images){
+    public GuiElementBox(IMapElement lifeform, IWorldMap map, Map<String,Image> images, Animal trackedTP, Animal trackedWL){
         image = images.get(lifeform.imageAddress());
 
         imageView = new ImageView(image);
@@ -35,7 +35,9 @@ public class GuiElementBox {
         Vector2d bottomJungle = jungleCorners[0];
         Vector2d upperJungle = jungleCorners[1];
 
-        if (lifeform.getPosition().precedes(upperJungle) && lifeform.getPosition().follows(bottomJungle))
+        if (lifeform.equals(trackedTP) || lifeform.equals(trackedWL)) verticalBox.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        else if (lifeform.getPosition().precedes(upperJungle) && lifeform.getPosition().follows(bottomJungle))
         verticalBox.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
 
         else verticalBox.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));

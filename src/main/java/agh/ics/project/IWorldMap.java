@@ -123,6 +123,23 @@ public interface IWorldMap {
      */
     Genome getDominantGenome();
 
+    /** indicates if an animal is alive
+     * @return a boolean value with meaning as described
+     * parameters : an animal object
+     */
+    boolean checkBeingAlive(Animal animal);
+
+    /** counts descendants of tracked animal
+     * @return integer number of descendants
+     * no parameters
+     */
+    int getDescendants();
+
+    /** resets descendant status
+     * no parameters
+     */
+    void clearDescendants();
+
     /** implementing the magical strategy
      * return type: void
      * no parameters

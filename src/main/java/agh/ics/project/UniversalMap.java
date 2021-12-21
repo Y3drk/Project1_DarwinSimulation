@@ -204,8 +204,11 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
 
                     if (potentialParents.size() == 2){
                         Animal child = potentialParents.get(0).reproduce(potentialParents.get(1));
+                        if(potentialParents.get(0).isDescendant || potentialParents.get(1).isDescendant) child.isDescendant = true;
                         potentialParents.get(0).children += 1;
                         potentialParents.get(1).children += 1;
+                        potentialParents.get(0).trackedChildren += 1;
+                        potentialParents.get(1).trackedChildren += 1;
                         children.add(child);
 
                     } else if (potentialParents.size() > 2) {
@@ -221,8 +224,11 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
                             if (secondParentChosen != firstParentChosen) {
                                 parent2 = potentialParents.get(secondParentChosen);
                                 Animal child = parent1.reproduce(parent2);
+                                if(parent1.isDescendant || parent2.isDescendant) child.isDescendant = true;
                                 parent1.children += 1;
+                                parent1.trackedChildren += 1;
                                 parent2.children += 1;
+                                parent2.trackedChildren +=1;
                                 children.add(child);
                                 secondParentFlag = false;
                             }
@@ -360,6 +366,22 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
             }
         }
         return dominant;
+    }
+
+    public boolean checkBeingAlive(Animal animal){ return animalStash.contains(animal);}
+
+    public int getDescendants(){
+        int counter = -1;
+        for (Animal animal: animalStash) {
+            if (animal.isDescendant) counter++;
+        }
+        return counter;
+    }
+
+    public void clearDescendants(){
+        for (Animal animal: animalStash) {
+            animal.isDescendant = false;
+        }
     }
 
     @Override //used purely for testing purposes

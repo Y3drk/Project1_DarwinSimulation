@@ -1,6 +1,7 @@
 package agh.ics.project;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Animal implements IMapElement, Comparable<Animal> {
@@ -12,6 +13,8 @@ public class Animal implements IMapElement, Comparable<Animal> {
     protected Genome genotype;
     protected IWorldMap map;
     protected Set<IPositionChangeObserver> observers = new HashSet<>();
+    protected int trackedChildren = 0;
+    protected boolean isDescendant = false;
 
     //animal constructor for Adams and Eves
     public Animal(IWorldMap map, Vector2d position,int fullEnergy){
@@ -166,6 +169,18 @@ public class Animal implements IMapElement, Comparable<Animal> {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Animal animal)) return false;
+        return energy == animal.energy && children == animal.children && daysAlive == animal.daysAlive && trackedChildren == animal.trackedChildren && position.equals(animal.position) && orientation == animal.orientation && genotype.equals(animal.genotype) && map.equals(animal.map) && observers.equals(animal.observers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(position, orientation, energy, children, daysAlive, genotype, map, observers, trackedChildren);
+    }
+
     // we assume, that the animal on which it was called was the stronger one and that both of them have enough energy to reproduce
     public Animal reproduce(Animal mother){
         int cubEnergy = (int) (this.energy * 0.25) + (int) (mother.energy * 0.25);
@@ -174,6 +189,7 @@ public class Animal implements IMapElement, Comparable<Animal> {
         Genome cubGenome = new Genome(this.genotype, mother.genotype, fathersEnergyProportion, mothersEnergyProportion);
 
         this.energy = (int) (this.energy * 0.75);
+
         mother.energy = (int) (mother.energy * 0.75);
 
         return new Animal(this.map, this.position, cubEnergy,cubGenome);
@@ -193,6 +209,14 @@ public class Animal implements IMapElement, Comparable<Animal> {
     } //may prove useless
 
     public Genome getGenome() {return this.genotype;}
+
+    public int getTrackedChildren() {return this.trackedChildren;}
+
+    public void setAsDescendant(){ this.isDescendant = true;}
+
+    public void resetTrackingChildren(){
+        this.trackedChildren = 0;
+    }
 
     public void positionChanged(Vector2d oldPosition, Vector2d newPosition){
         for (IPositionChangeObserver obs : observers) {
