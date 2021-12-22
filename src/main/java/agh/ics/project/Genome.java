@@ -41,8 +41,7 @@ public class Genome {
 
 
     //constructor for child Animals,
-    // we assume that father is the stronger animal, we also assume that fathersEnergyProportion is an int from 16 to 31 since he's stronger
-    // and mothersEnergyProportion is an int as well, tho the smaller one.
+    // we assume that father is the stronger animal,
     public Genome(Genome father, Genome mother, int fathersEnergyProportion, int mothersEnergyProportion) {
         Random generator = new Random();
         if (generator.nextInt() <= 0.5) {

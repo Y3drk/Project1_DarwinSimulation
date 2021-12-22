@@ -39,13 +39,6 @@ public class SimulationEngine implements Runnable {
 
                 this.map.AddNewGrass();
 
-                //diagnostic prints
-//            System.out.println("AFTER DAY NUMBER: " + days);
-//            System.out.println("TOTAL NUMBER OF DEAD ANIMALS: " + totalDeaths);
-//            System.out.println("NUMBER OF ALIVE ANIMALS: " + this.map.countAnimals());
-//            System.out.println(this.map);
-//            System.out.println("----------------------");
-
                 if (isMagical && this.map.countAnimals() == 5 && this.magicMiracles > 0) {
                     this.magicMiracles--;
                     this.didMiracleHappen = true;

@@ -167,9 +167,6 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
                 }
                 for (Animal animal: eatingAnimals) {
                     animal.energy += this.eatingEnergyProfit / eatingAnimals.size();
-
-                    //diagnostic prints
-                    //System.out.println("A GRASS WAS EATEN");
                 }
                 toRemove.add(grass);
             }

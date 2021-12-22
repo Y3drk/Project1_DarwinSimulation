@@ -44,8 +44,6 @@ public interface IWorldMap {
      */
     Object objectAt(Vector2d position);
 
-    /* additional methods required for the map to work*/
-
     /**
      * move all living animals randomly
      * return type: void

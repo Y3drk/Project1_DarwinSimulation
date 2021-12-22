@@ -221,7 +221,6 @@ public class App extends Application {
                 this.width = Integer.parseInt(mapWidth.getText());
                 this.height = Integer.parseInt(mapHeight.getText());
 
-                //simulation parameters
                 this.isMagicalForTeleported = isTeleportMapMagical.isSelected();
                 this.isMagicalForWalled = isWallMapMagical.isSelected();
 
@@ -239,11 +238,6 @@ public class App extends Application {
 
             this.teleportMap = map;
             this.walledMap = walledMap;
-
-            //diagnostic prints
-//            System.out.println("MAP AT DAY 0");
-//            System.out.println(map);
-//            System.out.println("--------------");
 
             upperRight = map.getCorners()[1];
             bottomLeft = map.getCorners()[0];
@@ -685,7 +679,6 @@ public class App extends Application {
     }
 
     public void changeGrid(GridPane grid, SimulationEngine engine, IWorldMap map) {
-
         engine.resetUpdateStatus();
 
         grid.getColumnConstraints().add(new ColumnConstraints(40));
@@ -726,13 +719,10 @@ public class App extends Application {
                 }
             }
         }
-
         grid.setGridLinesVisible(true);
     }
 
     public void simulation(SimulationEngine engine, GridPane grid, IWorldMap map) {
-        //diagnostic print
-        //System.out.println("THE SIMULATION HAS STARTED");
 
         Thread thread = new Thread(() -> {
             while(true) {
@@ -751,9 +741,7 @@ public class App extends Application {
                         updateDominant(map);
                         grid.setGridLinesVisible(true);
 
-                        //-----------
                         addData(engine, map, map.getTeleportValue());
-                        //---------saving data to csv connected stuff
 
                         if (map.getTeleportValue() && trackedTP != null){
                             setTrackingInfo(trackedTP,map,engine);
@@ -806,7 +794,6 @@ public class App extends Application {
 
     public void saveDataToFile(SimulationEngine engine, boolean whichMap) throws IOException{
         int dayNumber = engine.getDay();
-        //TO FINISH
         if (whichMap){
             int animalsTotal = sumAliveAnimalsTP/dayNumber;
             int grassTotal = sumPresentGrassTP/dayNumber;
@@ -817,7 +804,6 @@ public class App extends Application {
             String[] newRecord = {"Summary",Integer.toString(animalsTotal),Integer.toString(grassTotal), Integer.toString(averageEnergyTotal), Integer.toString(averageChildrenTotal), Integer.toString(averageLifeLengthTotal)};
             csvDataTP.add(newRecord);
 
-            //System.out.println(csvDataTP.size());
             File statisticsTP = new File("statisticsTP.csv");
             try (PrintWriter pwTP = new PrintWriter(statisticsTP)){
                 csvDataTP.stream()
@@ -837,7 +823,6 @@ public class App extends Application {
             String[] newRecord = {"Summary",Integer.toString(animalsTotal),Integer.toString(grassTotal), Integer.toString(averageEnergyTotal), Integer.toString(averageChildrenTotal), Integer.toString(averageLifeLengthTotal)};
             csvDataWL.add(newRecord);
 
-            //System.out.println(csvDataWL);
             File statisticsWL = new File("statisticsWL.csv");
             try (PrintWriter pwWL = new PrintWriter(statisticsWL)){
                 csvDataWL.stream()
@@ -877,5 +862,3 @@ public class App extends Application {
         grid.getChildren().clear();
     }
 }
-
-

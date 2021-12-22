@@ -71,7 +71,7 @@ public enum MapDirection {
             case EAST -> SOUTH;
             case WEST -> NORTH;
             case NORTHWEST -> NORTHEAST;
-            case NORTHEAST -> SOUTHWEST;
+            case NORTHEAST -> SOUTHEAST;
             case SOUTHWEST -> NORTHWEST;
             case SOUTHEAST -> SOUTHWEST;
         };

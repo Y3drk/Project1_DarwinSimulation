@@ -1,6 +1,5 @@
 package agh.ics.project.gui;
 
-
 import agh.ics.project.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

@@ -16,7 +16,7 @@ public class Grass implements IMapElement {
         return "*";
     }
 
-    @Override  //TO DO
+    @Override
     public String imageAddress() {
         return "src/main/resources/algs.png";
     }

@@ -204,10 +204,6 @@ public class Animal implements IMapElement, Comparable<Animal> {
         this.observers.add(observer);
     }
 
-    public void removeObserver(IPositionChangeObserver observer) {
-        this.observers.remove(observer);
-    } //may prove useless
-
     public Genome getGenome() {return this.genotype;}
 
     public int getTrackedChildren() {return this.trackedChildren;}
