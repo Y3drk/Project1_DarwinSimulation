@@ -2,6 +2,8 @@ package agh.ics.project;
 
 import java.util.*;
 
+import static java.lang.Math.max;
+
 public class UniversalMap implements IWorldMap, IPositionChangeObserver{
     //since both maps only differ in rules regarding crossing their borders, we will implement them by using the same class,
     //only with different value of a variable teleportEnabled
@@ -372,7 +374,7 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         for (Animal animal: animalStash) {
             if (animal.isDescendant) counter++;
         }
-        return counter;
+        return max(counter,0);
     }
 
     public void clearDescendants(){

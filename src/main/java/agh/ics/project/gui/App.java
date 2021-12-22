@@ -13,7 +13,6 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.io.*;
@@ -325,12 +324,14 @@ public class App extends Application {
                 engineThread.start();
                 simulation(this.engine, this.board, this.teleportMap);
                 this.ifTeleportMapStopped = false;
+                this.genomeHighlightedTP = false;
             } else {
                     this.engineThread.stop();
                     this.ifTeleportMapStopped = true;
 
-                    resetGrid(board);
-                    changeGrid(board,engine, teleportMap);
+                    GridController.resetGrid(board);
+                    GridController.changeGrid(board,engine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
+
                     setToggles(board,teleportMap, true, engine);
             }
         });
@@ -339,13 +340,17 @@ public class App extends Application {
         highlightDominateGenomTP.setOnAction(event -> {
             if (ifTeleportMapStopped) {
                 if (!genomeHighlightedTP) {
-                    resetGrid(board);
-                    highlightDominant(board, teleportMap, true);
+                    GridController.resetGrid(board);
+
+                    GridController.highlightDominant(board,teleportMap,true,upperRight, bottomLeft, images, currentDominantTP,currentDominantWL);
+
+                    setToggles(board,teleportMap,true, engine);
                     genomeHighlightedTP = true;
                 }
                 else {
-                    resetGrid(board);
-                    changeGrid(board,engine,teleportMap);
+                    GridController.resetGrid(board);
+                    GridController.changeGrid(board,engine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
+
                     setToggles(board,teleportMap,true, engine);
                     genomeHighlightedTP = false;
                 }
@@ -368,13 +373,15 @@ public class App extends Application {
                 walledEngineThread.start();
                 simulation(this.walledEngine, this.walledBoard, this.walledMap);
                 this.ifWalledMapStopped= false;
+                this.genomeHighlightedWL = false;
             } else {
                 synchronized (this) {
                     this.walledEngineThread.stop();
                     this.ifWalledMapStopped = true;
 
-                    resetGrid(walledBoard);
-                    changeGrid(walledBoard,walledEngine, walledMap);
+                    GridController.resetGrid(walledBoard);
+                    GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
+
                     setToggles(walledBoard,walledMap, false, walledEngine);
                 }
             }
@@ -383,15 +390,16 @@ public class App extends Application {
         highlightDominateGenomWL.setOnAction(event -> {
             if (ifWalledMapStopped) {
                 if (!genomeHighlightedWL) {
-                    resetGrid(walledBoard);
-                    highlightDominant(walledBoard, walledMap, false);
+                    GridController.resetGrid(walledBoard);
+
+                    GridController.highlightDominant(walledBoard,walledMap,false,upperRight, bottomLeft, images, currentDominantTP,currentDominantWL);
+
+                    setToggles(walledBoard,walledMap, false, walledEngine);
                     genomeHighlightedWL = true;
                 } else {
-                    resetGrid(walledBoard);
-                    changeGrid(walledBoard,walledEngine,walledMap);
+                    GridController.resetGrid(walledBoard);
+                    GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
 
-                    resetGrid(walledBoard);
-                    changeGrid(walledBoard,walledEngine, walledMap);
                     setToggles(walledBoard,walledMap, false, walledEngine);
 
                     genomeHighlightedWL = false;
@@ -409,9 +417,8 @@ public class App extends Application {
                 }
             }
         });
-
-        changeGrid(this.board, engine, this.teleportMap);
-        changeGrid(this.walledBoard, walledEngine, this.walledMap);
+        GridController.changeGrid(board,engine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
+        GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
     }
 
     public void initializeCharts(){
@@ -479,16 +486,16 @@ public class App extends Application {
     }
 
     public void initializeTrackedStats(){
-        Label trackedChildrenLabelTP = new Label("Children: " + this.currentChildrenTP);
+        Label trackedChildrenLabelTP = new Label("All Children: " + this.currentChildrenTP);
         this.currentGenomeTP = new Label("Genome: No animal chosen yet");
-        Label trackedDescendantsTP = new Label("Descendants: " + this.currentDescendantsTP);
+        Label trackedDescendantsTP = new Label("Living Descendants: " + this.currentDescendantsTP);
         Label ifDeadTP = new Label("No animal chosen");
         this.trackedAnimalInfoTP = new VBox(5,  currentGenomeTP, trackedChildrenLabelTP, trackedDescendantsTP, ifDeadTP);
         trackedAnimalInfoTP.setAlignment(Pos.CENTER_LEFT);
 
-        Label trackedChildrenLabelWL = new Label("Children: " + this.currentChildrenWL);
+        Label trackedChildrenLabelWL = new Label("All Children: " + this.currentChildrenWL);
         this.currentGenomeWL = new Label("Genome: No animal chosen yet");
-        Label trackedDescendantsWL = new Label("Descendants: " + this.currentDescendantsWL);
+        Label trackedDescendantsWL = new Label("Living Descendants: " + this.currentDescendantsWL);
         Label ifDeadWL = new Label("No animal chosen");
         this.trackedAnimalInfoWL = new VBox(5,  currentGenomeWL, trackedChildrenLabelWL, trackedDescendantsWL, ifDeadWL);
         trackedAnimalInfoWL.setAlignment(Pos.CENTER_LEFT);
@@ -521,13 +528,13 @@ public class App extends Application {
             this.trackedAnimalInfoTP.getChildren().clear();
             this.currentGenomeTP = new Label(animal.getGenome().toString().replaceAll(", ",""));
             currentGenomeTP.setMaxWidth(220.0);
-            Label trackedChildrenLabelTP = new Label("Children: " + animal.getTrackedChildren());
-            Label trackedDescendantsTP = new Label("Descendants: " + map.getDescendants());
+            Label trackedChildrenLabelTP = new Label("All Children: " + animal.getTrackedChildren());
+            Label trackedDescendantsTP = new Label("Living Descendants: " + map.getDescendants());
             Label ifDeadTP = new Label();
             if (map.checkBeingAlive(animal)){
                 ifDeadTP.setText("The animal is alive");
             } else {
-                ifDeadTP.setText(("The animal died on day:" + engine.getDay()));
+                ifDeadTP.setText(("The animal died on day: " + engine.getDay()));
                 trackedTP = null;
             }
             this.trackedAnimalInfoTP.getChildren().addAll(currentGenomeTP,trackedChildrenLabelTP,trackedDescendantsTP, ifDeadTP);
@@ -536,13 +543,13 @@ public class App extends Application {
             this.trackedAnimalInfoWL.getChildren().clear();
             this.currentGenomeWL = new Label(animal.getGenome().toString().replaceAll(", ",""));
             currentGenomeWL.setMaxWidth(220.0);
-            Label trackedChildrenLabelWL = new Label("Children: " + animal.getTrackedChildren());
-            Label trackedDescendantsWL = new Label("Descendants: " + map.getDescendants());
+            Label trackedChildrenLabelWL = new Label("All Children: " + animal.getTrackedChildren());
+            Label trackedDescendantsWL = new Label("Living Descendants: " + map.getDescendants());
             Label ifDeadWL = new Label();
             if (map.checkBeingAlive(animal)){
                 ifDeadWL.setText("The animal is alive");
             } else {
-                ifDeadWL.setText(("The animal died on day:" + engine.getDay()));
+                ifDeadWL.setText(("The animal died on day: " + engine.getDay()));
                 trackedWL = null;
             }
             this.trackedAnimalInfoWL.getChildren().addAll(currentGenomeWL,trackedChildrenLabelWL,trackedDescendantsWL, ifDeadWL);
@@ -578,59 +585,6 @@ public class App extends Application {
             this.displayedGenomeWL = new Label(this.currentDominantWL.toString());
             this.dominantGenomeWL.getChildren().add(this.displayedGenomeWL);
    }
-    }
-
-    public void highlightDominant(GridPane grid, IWorldMap map, boolean which){
-
-        grid.getColumnConstraints().add(new ColumnConstraints(40));
-        grid.getRowConstraints().add(new RowConstraints(40));
-
-        Label xyLabel = new Label("y/x");
-        grid.add(xyLabel, 0, 0);
-        GridPane.setHalignment(xyLabel, HPos.CENTER);
-
-
-        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
-            Label axisLabel = new Label(Integer.toString(i + bottomLeft.x - 1));
-            grid.getColumnConstraints().add(new ColumnConstraints(40));
-            grid.add(axisLabel, i, 0);
-            GridPane.setHalignment(axisLabel, HPos.CENTER);
-
-        }
-
-        for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
-            Label axisLabel = new Label(Integer.toString(upperRight.y - j + 1));
-            grid.add(axisLabel, 0, j);
-            grid.getRowConstraints().add(new RowConstraints(40));
-            GridPane.setHalignment(axisLabel, HPos.CENTER);
-        }
-        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
-            for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
-                Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
-                if (map.isOccupied(testedPos)) {
-                    var lifeform = map.objectAt(testedPos);
-                    GuiElementBox elem = new GuiElementBox((IMapElement) lifeform, map, images, null, null);
-                    grid.add(elem.verticalBox, i, j);
-                    GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
-
-                    if (which) {
-                        if (lifeform instanceof Animal && ((Animal) lifeform).getGenome().equals(this.currentDominantTP)) {
-                            elem.verticalBox.setBackground(new Background(new BackgroundFill(Color.LIME, CornerRadii.EMPTY, Insets.EMPTY)));
-                        }
-                    } else {
-                        if (lifeform instanceof Animal && ((Animal) lifeform).getGenome().equals(this.currentDominantWL)) {
-                            elem.verticalBox.setBackground(new Background(new BackgroundFill(Color.LIME, CornerRadii.EMPTY, Insets.EMPTY)));
-                        }
-                    }
-
-                } else {
-                    GuiElementBox elem = new GuiElementBox(map, testedPos);
-                    grid.add(elem.verticalBox, i, j);
-                    GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
-                }
-            }
-        }
-        grid.setGridLinesVisible(true);
     }
 
     public void setToggles(GridPane grid, IWorldMap map, boolean which, SimulationEngine engine) {
@@ -678,49 +632,6 @@ public class App extends Application {
         }
     }
 
-    public void changeGrid(GridPane grid, SimulationEngine engine, IWorldMap map) {
-        engine.resetUpdateStatus();
-
-        grid.getColumnConstraints().add(new ColumnConstraints(40));
-        grid.getRowConstraints().add(new RowConstraints(40));
-
-        Label xyLabel = new Label("y/x");
-        grid.add(xyLabel, 0, 0);
-        GridPane.setHalignment(xyLabel, HPos.CENTER);
-
-
-        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
-            Label axisLabel = new Label(Integer.toString(i + bottomLeft.x - 1));
-            grid.getColumnConstraints().add(new ColumnConstraints(40));
-            grid.add(axisLabel, i, 0);
-            GridPane.setHalignment(axisLabel, HPos.CENTER);
-
-        }
-
-        for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
-            Label axisLabel = new Label(Integer.toString(upperRight.y - j + 1));
-            grid.add(axisLabel, 0, j);
-            grid.getRowConstraints().add(new RowConstraints(40));
-            GridPane.setHalignment(axisLabel, HPos.CENTER);
-        }
-        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
-            for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
-                Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
-                if (map.isOccupied(testedPos)) {
-
-                    GuiElementBox elem = new GuiElementBox((IMapElement) map.objectAt(testedPos), map, images, trackedTP, trackedWL);
-                    grid.add(elem.verticalBox, i, j);
-                    GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
-
-                } else {
-                    GuiElementBox elem = new GuiElementBox(map, testedPos);
-                    grid.add(elem.verticalBox, i, j);
-                    GridPane.setHalignment(elem.verticalBox, HPos.CENTER);
-                }
-            }
-        }
-        grid.setGridLinesVisible(true);
-    }
 
     public void simulation(SimulationEngine engine, GridPane grid, IWorldMap map) {
 
@@ -735,8 +646,9 @@ public class App extends Application {
 
                 if (engine.getUpdateStatus()) {
                     Platform.runLater(() -> {
-                        resetGrid(grid);
-                        changeGrid(grid, engine, map);
+                        GridController.resetGrid(grid);
+                        GridController.changeGrid(grid,engine,map,upperRight,bottomLeft,images,trackedTP,trackedWL);
+
                         updateChart(engine, map);
                         updateDominant(map);
                         grid.setGridLinesVisible(true);
@@ -853,12 +765,5 @@ public class App extends Application {
     public void stop(){
         System.out.println("THE VISUALIZATION WINDOW WAS CLOSED");
         System.exit(0);
-    }
-
-    public void resetGrid(GridPane grid){
-        grid.setGridLinesVisible(false);
-        grid.getColumnConstraints().clear();
-        grid.getRowConstraints().clear();
-        grid.getChildren().clear();
     }
 }
