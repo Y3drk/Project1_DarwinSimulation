@@ -3,7 +3,6 @@ package agh.ics.project.gui;
 import agh.ics.project.*;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -33,7 +32,6 @@ public class App extends Application {
     protected Thread teleportEngineThread;
     protected Thread walledEngineThread;
 
-
     protected SimulationEngine teleportEngine;
     protected SimulationEngine walledEngine;
 
@@ -62,20 +60,7 @@ public class App extends Application {
     protected Alert magicTP;
     protected Alert magicWL;
 
-    protected ToggleGroup togglesTP = new ToggleGroup();
-    protected ToggleGroup togglesWL = new ToggleGroup();
-
-    protected Animal trackedTP;
-    protected int currentChildrenTP = 0;
-    protected Label currentGenomeTP;
-    protected int currentDescendantsTP = 0;
-    protected VBox trackedAnimalInfoTP;
-
-    protected Animal trackedWL;
-    protected int currentChildrenWL = 0;
-    protected Label currentGenomeWL;
-    protected int currentDescendantsWL = 0;
-    protected VBox trackedAnimalInfoWL;
+    protected TrackingService bothMapsTracking;
 
     protected DataFileService fileData;
 
@@ -221,8 +206,8 @@ public class App extends Application {
         Button startStopButtonTP = new Button("Start/Stop TP");
         Button startStopButtonWL = new Button("Start/Stop WL");
 
-        Button highlightDominateGenomTP = new Button("Highlight Dominating Genom");
-        Button highlightDominateGenomWL = new Button("Highlight Dominating Genom");
+        Button highlightDominateGenomTP = new Button("Highlight Dominating Genome");
+        Button highlightDominateGenomWL = new Button("Highlight Dominating Genome");
 
         Button saveStatsTP = new Button("Save map statistics to file");
         Button saveStatsWL = new Button("Save map statistics to file");
@@ -253,13 +238,15 @@ public class App extends Application {
 
         bothCharts = new DataCharts(startingAnimals, startEnergy);
 
-        initializeTrackedStats();
+        bothMapsTracking = new TrackingService();
 
-        HBox chartsTP = new HBox(5,trackedAnimalInfoTP,bothCharts.teleportMapChart);
+        HBox chartsTP = new HBox(5,bothMapsTracking.trackedAnimalInfoTP,bothCharts.teleportMapChart);
+
         chartsTP.setAlignment(Pos.CENTER);
         chartsTP.setPadding(new Insets(5, 5, 5, 5));
 
-        HBox chartsWL = new HBox(5, trackedAnimalInfoWL, bothCharts.walledMapChart);
+        HBox chartsWL = new HBox(5, bothMapsTracking.trackedAnimalInfoWL, bothCharts.walledMapChart);
+
         chartsWL.setAlignment(Pos.CENTER);
         chartsWL.setPadding(new Insets(5, 5, 5, 5));
 
@@ -287,9 +274,9 @@ public class App extends Application {
                     this.ifTeleportMapStopped = true;
 
                     GridController.resetGrid(board);
-                    GridController.changeGrid(board, teleportEngine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
+                    GridController.changeGrid(board, teleportEngine,teleportMap,upperRight,bottomLeft,images,bothMapsTracking.trackedTP,bothMapsTracking.trackedWL);
 
-                    setToggles(board,teleportMap, true, teleportEngine);
+                    bothMapsTracking.setToggles(board,teleportMap, true, teleportEngine);
             }
         });
 
@@ -301,14 +288,16 @@ public class App extends Application {
 
                     GridController.highlightDominant(board,teleportMap,true,upperRight, bottomLeft, images, genomeDominants.currentDominantTP,genomeDominants.currentDominantWL);
 
-                    setToggles(board,teleportMap,true, teleportEngine);
+                    bothMapsTracking.setToggles(board,teleportMap,true, teleportEngine);
+
                     genomeDominants.changeIfHighlighted(true, true);
                 }
                 else {
                     GridController.resetGrid(board);
-                    GridController.changeGrid(board, teleportEngine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
+                    GridController.changeGrid(board, teleportEngine,teleportMap,upperRight,bottomLeft,images,bothMapsTracking.trackedTP,bothMapsTracking.trackedWL);
 
-                    setToggles(board,teleportMap,true, teleportEngine);
+                    bothMapsTracking.setToggles(board,teleportMap,true, teleportEngine);
+
                     genomeDominants.changeIfHighlighted(true, false);
                 }
             }
@@ -339,9 +328,8 @@ public class App extends Application {
                     this.ifWalledMapStopped = true;
 
                     GridController.resetGrid(walledBoard);
-                    GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
-
-                    setToggles(walledBoard,walledMap, false, walledEngine);
+                    GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,bothMapsTracking.trackedTP,bothMapsTracking.trackedWL);
+                    bothMapsTracking.setToggles(walledBoard,walledMap, false, walledEngine);
                 }
             }
         });
@@ -354,14 +342,15 @@ public class App extends Application {
 
                     GridController.highlightDominant(walledBoard,walledMap,false,upperRight, bottomLeft, images, genomeDominants.currentDominantTP, genomeDominants.currentDominantWL);
 
-                    setToggles(walledBoard,walledMap, false, walledEngine);
+                    bothMapsTracking.setToggles(walledBoard,walledMap, false, walledEngine);
+
                     genomeDominants.changeIfHighlighted(false, true);
 
                 } else {
                     GridController.resetGrid(walledBoard);
-                    GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
+                    GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,bothMapsTracking.trackedTP,bothMapsTracking.trackedWL);
 
-                    setToggles(walledBoard,walledMap, false, walledEngine);
+                    bothMapsTracking.setToggles(walledBoard,walledMap, false, walledEngine);
 
                     genomeDominants.changeIfHighlighted(false, false);
                 }
@@ -378,103 +367,8 @@ public class App extends Application {
                 }
             }
         });
-        GridController.changeGrid(board, teleportEngine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
-        GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
-    }
-
-    public void initializeTrackedStats(){
-        Label trackedChildrenLabelTP = new Label("All Children: " + this.currentChildrenTP);
-        this.currentGenomeTP = new Label("Genome: No animal chosen yet");
-        Label trackedDescendantsTP = new Label("Living Descendants: " + this.currentDescendantsTP);
-        Label ifDeadTP = new Label("No animal chosen");
-        this.trackedAnimalInfoTP = new VBox(5,  currentGenomeTP, trackedChildrenLabelTP, trackedDescendantsTP, ifDeadTP);
-        trackedAnimalInfoTP.setAlignment(Pos.CENTER_LEFT);
-
-        Label trackedChildrenLabelWL = new Label("All Children: " + this.currentChildrenWL);
-        this.currentGenomeWL = new Label("Genome: No animal chosen yet");
-        Label trackedDescendantsWL = new Label("Living Descendants: " + this.currentDescendantsWL);
-        Label ifDeadWL = new Label("No animal chosen");
-        this.trackedAnimalInfoWL = new VBox(5,  currentGenomeWL, trackedChildrenLabelWL, trackedDescendantsWL, ifDeadWL);
-        trackedAnimalInfoWL.setAlignment(Pos.CENTER_LEFT);
-    }
-
-    public void setTrackingInfo(Animal animal, IWorldMap map, SimulationEngine engine) {
-        if (map.getTeleportValue()) {
-            this.trackedAnimalInfoTP.getChildren().clear();
-            this.currentGenomeTP = new Label(animal.getGenome().toString().replaceAll(", ",""));
-            currentGenomeTP.setMaxWidth(220.0);
-            Label trackedChildrenLabelTP = new Label("All Children: " + animal.getTrackedChildren());
-            Label trackedDescendantsTP = new Label("Living Descendants: " + map.getDescendants());
-            Label ifDeadTP = new Label();
-            if (map.checkBeingAlive(animal)){
-                ifDeadTP.setText("The animal is alive");
-            } else {
-                ifDeadTP.setText(("The animal died on day: " + engine.getDay()));
-                trackedTP = null;
-            }
-            this.trackedAnimalInfoTP.getChildren().addAll(currentGenomeTP,trackedChildrenLabelTP,trackedDescendantsTP, ifDeadTP);
-            trackedAnimalInfoTP.setAlignment(Pos.CENTER_LEFT);
-        } else {
-            this.trackedAnimalInfoWL.getChildren().clear();
-            this.currentGenomeWL = new Label(animal.getGenome().toString().replaceAll(", ",""));
-            currentGenomeWL.setMaxWidth(220.0);
-            Label trackedChildrenLabelWL = new Label("All Children: " + animal.getTrackedChildren());
-            Label trackedDescendantsWL = new Label("Living Descendants: " + map.getDescendants());
-            Label ifDeadWL = new Label();
-            if (map.checkBeingAlive(animal)){
-                ifDeadWL.setText("The animal is alive");
-            } else {
-                ifDeadWL.setText(("The animal died on day: " + engine.getDay()));
-                trackedWL = null;
-            }
-            this.trackedAnimalInfoWL.getChildren().addAll(currentGenomeWL,trackedChildrenLabelWL,trackedDescendantsWL, ifDeadWL);
-            trackedAnimalInfoWL.setAlignment(Pos.CENTER_LEFT);
-        }
-    }
-
-    public void setToggles(GridPane grid, IWorldMap map, boolean which, SimulationEngine engine) {
-
-        for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
-            for (int j = 1; j <= upperRight.y - bottomLeft.y + 1; j++) {
-                Vector2d testedPos = new Vector2d(i + bottomLeft.x - 1, upperRight.y - j + 1);
-                if (map.objectAt(testedPos) instanceof Animal trackedAnimal) {
-                    if (which) {
-                        ToggleButton toggleButtonTP = new ToggleButton();
-                        toggleButtonTP.setBackground(null);
-                        toggleButtonTP.setToggleGroup(togglesTP);
-
-                        toggleButtonTP.setOnAction(event -> {
-                            if (trackedTP != null) trackedTP.resetTrackingChildren();
-                            map.clearDescendants();
-                            trackedAnimal.resetTrackingChildren();
-                            trackedTP = trackedAnimal;
-                            trackedTP.setAsDescendant();
-                            setTrackingInfo(trackedAnimal,map, engine);
-                        });
-
-                        grid.add(toggleButtonTP, i, j);
-                        GridPane.setHalignment(toggleButtonTP, HPos.CENTER);
-                    }
-                    else {
-                        ToggleButton toggleButtonWL = new ToggleButton();
-                        toggleButtonWL.setBackground(null);
-                        toggleButtonWL.setToggleGroup(togglesWL);
-
-                        toggleButtonWL.setOnAction(event -> {
-                            if (trackedWL != null) trackedWL.resetTrackingChildren();
-                            map.clearDescendants();
-                            trackedAnimal.resetTrackingChildren();
-                            trackedWL = trackedAnimal;
-                            trackedWL.setAsDescendant();
-                            setTrackingInfo(trackedAnimal,map, engine);
-                        });
-
-                        grid.add(toggleButtonWL, i, j);
-                        GridPane.setHalignment(toggleButtonWL, HPos.CENTER);
-                    }
-                }
-            }
-        }
+        GridController.changeGrid(board, teleportEngine,teleportMap,upperRight,bottomLeft,images,bothMapsTracking.trackedTP,bothMapsTracking.trackedWL);
+        GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,bothMapsTracking.trackedTP,bothMapsTracking.trackedWL);
     }
 
     public void simulation(SimulationEngine engine, GridPane grid, IWorldMap map) {
@@ -491,22 +385,21 @@ public class App extends Application {
                 if (engine.getUpdateStatus()) {
                     Platform.runLater(() -> {
                         GridController.resetGrid(grid);
-                        GridController.changeGrid(grid,engine,map,upperRight,bottomLeft,images,trackedTP,trackedWL);
+                        GridController.changeGrid(grid,engine,map,upperRight,bottomLeft,images, bothMapsTracking.trackedTP,bothMapsTracking.trackedWL);
 
                         bothCharts.updateChart(engine,map);
 
-                        //updateDominant(map);
                         genomeDominants.updateDominant(map);
 
                         grid.setGridLinesVisible(true);
 
                         fileData.addData(engine, map, map.getTeleportValue());
 
-                        if (map.getTeleportValue() && trackedTP != null){
-                            setTrackingInfo(trackedTP,map,engine);
+                        if (map.getTeleportValue() && bothMapsTracking.trackedTP != null){
+                            bothMapsTracking.setTrackingInfo(bothMapsTracking.trackedTP,map,engine);
                         }
-                        else if (!map.getTeleportValue() && trackedWL != null){
-                            setTrackingInfo(trackedWL,map,engine);
+                        else if (!map.getTeleportValue() && bothMapsTracking.trackedWL != null){
+                            bothMapsTracking.setTrackingInfo(bothMapsTracking.trackedWL,map,engine);
                         }
 
                         if(engine.getMagicStatus() && engine.getMiracleStatus()){
