@@ -30,11 +30,11 @@ public class App extends Application {
     protected IWorldMap teleportMap;
     protected IWorldMap walledMap;
 
-    protected Thread engineThread;
+    protected Thread teleportEngineThread;
     protected Thread walledEngineThread;
 
 
-    protected SimulationEngine engine;
+    protected SimulationEngine teleportEngine;
     protected SimulationEngine walledEngine;
 
     protected boolean ifTeleportMapStopped = false;
@@ -57,17 +57,7 @@ public class App extends Application {
 
     protected DataCharts bothCharts;
 
-    protected Label displayedGenomeTP;
-    protected HBox dominantGenomeTP;
-
-    protected Label displayedGenomeWL;
-    protected HBox dominantGenomeWL;
-
-    protected Genome currentDominantTP;
-    protected Genome currentDominantWL;
-
-    protected boolean genomeHighlightedTP = false;
-    protected boolean genomeHighlightedWL = false;
+    protected DominantController genomeDominants;
 
     protected Alert magicTP;
     protected Alert magicWL;
@@ -145,7 +135,7 @@ public class App extends Application {
         HBox startEnergyBox = new HBox(5,mapStartEnergyLabel,mapStartEnergy);
         startEnergyBox.setAlignment(Pos.CENTER);
 
-        TextField mapMoveEnergy = new TextField("15");
+        TextField mapMoveEnergy = new TextField("1");
         Label mapMoveEnergyLabel = new Label("MoveEnergy");
         HBox moveEnergyBox = new HBox(5,mapMoveEnergyLabel,mapMoveEnergy);
         moveEnergyBox.setAlignment(Pos.CENTER);
@@ -207,18 +197,18 @@ public class App extends Application {
             upperRight = map.getCorners()[1];
             bottomLeft = map.getCorners()[0];
 
-            this.engine = new SimulationEngine(map,isMagicalForTeleported);
+            this.teleportEngine = new SimulationEngine(map,isMagicalForTeleported);
             this.walledEngine = new SimulationEngine(walledMap,isMagicalForWalled);
 
             initializeSimulationScene();
             primaryStage.setScene(simulationScene);
-            this.engineThread = new Thread(engine);
+            this.teleportEngineThread = new Thread(teleportEngine);
             this.walledEngineThread = new Thread(walledEngine);
 
-            engineThread.start();
+            teleportEngineThread.start();
             walledEngineThread.start();
 
-            simulation(this.engine, this.board, this.teleportMap);
+            simulation(this.teleportEngine, this.board, this.teleportMap);
             simulation(this.walledEngine, this.walledBoard, this.walledMap);
         });
     }
@@ -259,7 +249,7 @@ public class App extends Application {
         board.setPadding(new Insets(10, 10, 10, 10));
         walledBoard.setPadding(new Insets(10, 10, 10, 10));
 
-        initializeDominant();
+        genomeDominants = new DominantController();
 
         bothCharts = new DataCharts(startingAnimals, startEnergy);
 
@@ -273,10 +263,10 @@ public class App extends Application {
         chartsWL.setAlignment(Pos.CENTER);
         chartsWL.setPadding(new Insets(5, 5, 5, 5));
 
-        VBox tpMapUI = new VBox(10, teleportMapLabel, scrollForTPBoard, buttonsTP, dominantGenomeTP, chartsTP);
+        VBox tpMapUI = new VBox(10, teleportMapLabel, scrollForTPBoard, buttonsTP, genomeDominants.dominantGenomeTP, chartsTP);
         tpMapUI.setAlignment(Pos.CENTER);
 
-        VBox wlMapUI = new VBox(10,walledMapLabel,scrollForWLBoard,buttonsWL,dominantGenomeWL, chartsWL);
+        VBox wlMapUI = new VBox(10,walledMapLabel,scrollForWLBoard,buttonsWL,genomeDominants.dominantGenomeWL, chartsWL);
         wlMapUI.setAlignment(Pos.CENTER);
 
         HBox wholeUI = new HBox(40,tpMapUI, wlMapUI);
@@ -286,39 +276,40 @@ public class App extends Application {
 
         startStopButtonTP.setOnAction(event -> {
             if(ifTeleportMapStopped){
-                this.engineThread = new Thread(engine);
-                engineThread.start();
-                simulation(this.engine, this.board, this.teleportMap);
+                this.teleportEngineThread = new Thread(teleportEngine);
+                teleportEngineThread.start();
+                simulation(this.teleportEngine, this.board, this.teleportMap);
                 this.ifTeleportMapStopped = false;
-                this.genomeHighlightedTP = false;
+                genomeDominants.changeIfHighlighted(true, false);
+
             } else {
-                    this.engineThread.stop();
+                    this.teleportEngineThread.stop();
                     this.ifTeleportMapStopped = true;
 
                     GridController.resetGrid(board);
-                    GridController.changeGrid(board,engine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
+                    GridController.changeGrid(board, teleportEngine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
 
-                    setToggles(board,teleportMap, true, engine);
+                    setToggles(board,teleportMap, true, teleportEngine);
             }
         });
 
 
         highlightDominateGenomTP.setOnAction(event -> {
             if (ifTeleportMapStopped) {
-                if (!genomeHighlightedTP) {
+                if (!genomeDominants.getIfHighligted(true)) {
                     GridController.resetGrid(board);
 
-                    GridController.highlightDominant(board,teleportMap,true,upperRight, bottomLeft, images, currentDominantTP,currentDominantWL);
+                    GridController.highlightDominant(board,teleportMap,true,upperRight, bottomLeft, images, genomeDominants.currentDominantTP,genomeDominants.currentDominantWL);
 
-                    setToggles(board,teleportMap,true, engine);
-                    genomeHighlightedTP = true;
+                    setToggles(board,teleportMap,true, teleportEngine);
+                    genomeDominants.changeIfHighlighted(true, true);
                 }
                 else {
                     GridController.resetGrid(board);
-                    GridController.changeGrid(board,engine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
+                    GridController.changeGrid(board, teleportEngine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
 
-                    setToggles(board,teleportMap,true, engine);
-                    genomeHighlightedTP = false;
+                    setToggles(board,teleportMap,true, teleportEngine);
+                    genomeDominants.changeIfHighlighted(true, false);
                 }
             }
         });
@@ -326,7 +317,7 @@ public class App extends Application {
         saveStatsTP.setOnAction(event -> {
             if(ifTeleportMapStopped){
                 try {
-                    fileData.saveDataToFile(engine,true);
+                    fileData.saveDataToFile(teleportEngine,true);
 
                 } catch (IOException e) {
                     System.out.println("IO STREAM EXCEPTION");
@@ -340,7 +331,8 @@ public class App extends Application {
                 walledEngineThread.start();
                 simulation(this.walledEngine, this.walledBoard, this.walledMap);
                 this.ifWalledMapStopped= false;
-                this.genomeHighlightedWL = false;
+                genomeDominants.changeIfHighlighted(false, false);
+
             } else {
                 synchronized (this) {
                     this.walledEngineThread.stop();
@@ -356,20 +348,22 @@ public class App extends Application {
 
         highlightDominateGenomWL.setOnAction(event -> {
             if (ifWalledMapStopped) {
-                if (!genomeHighlightedWL) {
+                if (!genomeDominants.getIfHighligted(false)) {
                     GridController.resetGrid(walledBoard);
 
-                    GridController.highlightDominant(walledBoard,walledMap,false,upperRight, bottomLeft, images, currentDominantTP,currentDominantWL);
+
+                    GridController.highlightDominant(walledBoard,walledMap,false,upperRight, bottomLeft, images, genomeDominants.currentDominantTP, genomeDominants.currentDominantWL);
 
                     setToggles(walledBoard,walledMap, false, walledEngine);
-                    genomeHighlightedWL = true;
+                    genomeDominants.changeIfHighlighted(false, true);
+
                 } else {
                     GridController.resetGrid(walledBoard);
                     GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
 
                     setToggles(walledBoard,walledMap, false, walledEngine);
 
-                    genomeHighlightedWL = false;
+                    genomeDominants.changeIfHighlighted(false, false);
                 }
             }
         });
@@ -377,7 +371,6 @@ public class App extends Application {
         saveStatsWL.setOnAction(event -> {
             if(ifWalledMapStopped){
                 try {
-                    //saveDataToFile(walledEngine,false);
                     fileData.saveDataToFile(walledEngine,false);
                 }
                 catch (IOException e) {
@@ -385,7 +378,7 @@ public class App extends Application {
                 }
             }
         });
-        GridController.changeGrid(board,engine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
+        GridController.changeGrid(board, teleportEngine,teleportMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
         GridController.changeGrid(walledBoard,walledEngine,walledMap,upperRight,bottomLeft,images,trackedTP,trackedWL);
     }
 
@@ -439,36 +432,6 @@ public class App extends Application {
         }
     }
 
-    public void initializeDominant(){
-        Label dominantLabelTP = new Label("Dominant Genome:");
-        this.displayedGenomeTP = new Label ("No dominant genome yet");
-        this.dominantGenomeTP = new HBox(10, dominantLabelTP, displayedGenomeTP);
-        dominantGenomeTP.setAlignment(Pos.CENTER);
-
-        Label dominantLabelWL = new Label("Dominant Genome:");
-        this.displayedGenomeWL = new Label ("No dominant genome yet");
-        this.dominantGenomeWL = new HBox(10, dominantLabelWL, displayedGenomeWL);
-        dominantGenomeWL.setAlignment(Pos.CENTER);
-
-    }
-
-    public void updateDominant(IWorldMap map){
-        if (map.getTeleportValue()) {
-            this.dominantGenomeTP.getChildren().remove(displayedGenomeTP);
-
-            this.currentDominantTP = map.getDominantGenome();
-            this.displayedGenomeTP = new Label(this.currentDominantTP.toString());
-            this.dominantGenomeTP.getChildren().add(this.displayedGenomeTP);
-
-        } else{
-            this.dominantGenomeWL.getChildren().remove(displayedGenomeWL);
-
-            this.currentDominantWL = map.getDominantGenome();
-            this.displayedGenomeWL = new Label(this.currentDominantWL.toString());
-            this.dominantGenomeWL.getChildren().add(this.displayedGenomeWL);
-   }
-    }
-
     public void setToggles(GridPane grid, IWorldMap map, boolean which, SimulationEngine engine) {
 
         for (int i = 1; i <= upperRight.x - bottomLeft.x + 1; i++) {
@@ -514,7 +477,6 @@ public class App extends Application {
         }
     }
 
-
     public void simulation(SimulationEngine engine, GridPane grid, IWorldMap map) {
 
         Thread thread = new Thread(() -> {
@@ -533,10 +495,11 @@ public class App extends Application {
 
                         bothCharts.updateChart(engine,map);
 
-                        updateDominant(map);
+                        //updateDominant(map);
+                        genomeDominants.updateDominant(map);
+
                         grid.setGridLinesVisible(true);
 
-                        //addData(engine, map, map.getTeleportValue());
                         fileData.addData(engine, map, map.getTeleportValue());
 
                         if (map.getTeleportValue() && trackedTP != null){
