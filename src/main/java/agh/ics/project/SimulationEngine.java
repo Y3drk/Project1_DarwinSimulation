@@ -66,11 +66,11 @@ public class SimulationEngine implements Runnable {
         else return 0;
     }
 
+    public boolean getMagicStatus() {return this.isMagical;}
+
     public int getMagicMiraclesLeft(){
         return this.magicMiracles;
     }
-
-    public boolean getMagicStatus() {return this.isMagical;}
 
     public boolean getMiracleStatus() {return this.didMiracleHappen;}
 

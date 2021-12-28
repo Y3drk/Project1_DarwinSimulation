@@ -101,7 +101,7 @@ public class DataCharts {
         }
 
         try {
-            Thread.sleep(40);
+            Thread.sleep(23);
         } catch (InterruptedException ex){
             System.out.println("THREAD WAS INTERRUPTED");
         }

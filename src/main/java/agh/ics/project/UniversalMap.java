@@ -9,10 +9,10 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
     //only with different value of a variable teleportEnabled
 
     //V1 - teleportEnabled = true
-    //with connected / rolled edges -> if an animal tries to move outside the map, it appears on the other side.
+    //if an animal tries to move outside the map, it appears on the other side.
 
     //V2 - teleportEnabled = false
-    // with The Wall build around its edges -> if an animal tries to move outside the map it stays in the same place and looses its turn
+    //if an animal tries to move outside the map it stays in the same place and looses its turn.
     
     protected int width;
     protected int height;
@@ -56,7 +56,7 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         this.jungleWidth = (int) (width*jungleToStepRatio);
 
         if (jungleToStepRatio > 1) {
-            throw new IllegalArgumentException("Incorrect proportions!");
+            throw new IllegalArgumentException("INCORRECT PROPORTIONS!");
         }
 
         this.bottomLeftJungleCorner = new Vector2d((width-this.jungleWidth)/2,(height-this.jungleHeight)/2);
@@ -106,8 +106,7 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
         return objectAt(position) != null;
     }
 
-    @Override //we assume that after putting an animal in the list it is sorted,
-    // also if there are many animals in one field we return the strongest
+    @Override //we assume that after putting an animal in the list it is sorted.
     public Object objectAt(Vector2d position) {
         ArrayList<Animal> fieldAnimals = animals.get(position);
         if (fieldAnimals == null) return grass.get(position);
@@ -140,7 +139,6 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
     }
     
     public void moveAllAnimals(){
-
         for (Animal animal: animalStash) {
             animal.energy -= moveEnergyCost;
             animal.move();
@@ -249,7 +247,6 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
 
         for (int i=0; i < this.height; i ++){
             for (int j=0; j < this.width; j++){
-
                 Vector2d checker = new Vector2d(i,j);
 
                 if (checker.precedes(upperRightJungleCorner) && checker.follows(bottomLeftJungleCorner) && !isOccupied(checker)) jungleFreeFields.add(checker);
@@ -319,9 +316,6 @@ public class UniversalMap implements IWorldMap, IPositionChangeObserver{
             Collections.sort(newFieldList);
             animals.put(newPosition,newFieldList);
         }
-        //diagnostic prints
-//        System.out.println("ANIMAL HAS MOVED FROM:" + oldPosition.toString() + " TO " + newPosition.toString());
-//        System.out.println("----------------");
     }
 
     public boolean getTeleportValue() {return this.teleportEnabled;}

@@ -52,7 +52,5 @@ public class Genome {
             for (int j = mothersEnergyProportion; j < 32; j++) genotype.add(father.genotype.get(j));
         }
     }
-
-
 }
 

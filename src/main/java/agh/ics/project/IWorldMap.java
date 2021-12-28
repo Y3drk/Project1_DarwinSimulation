@@ -53,7 +53,8 @@ public interface IWorldMap {
 
     /**
      * remove all dead animals and count them as well as sum the days they have lived
-     * @return array consisting of :amount of dead animals, sum  of the days they have lived.
+     * @return int[]
+     *               array consisting of :amount of dead animals, sum  of the days they have lived.
      * no parameters
      */
     int[] removeDeadAnimals();
@@ -80,55 +81,64 @@ public interface IWorldMap {
     void AddNewGrass();
 
     /** counting all the living animals
-     * @return a number of all living animals
+     * @return integer
+     *                  number of all living animals
      * no parameters
      */
     int countAnimals();
 
     /** counting the grass present on the map
-     * @return a number of all present tufts of grass
+     * @return integer
+     *                  number of all present tufts of grass
      * no parameters
      */
     int countGrass();
 
     /** returning two crucial corners of the map
-     * @return a Vector2d array with mentioned corners
+     * @return Vector2d[]
+     *                   array with mentioned corners
      * no parameters
      */
     Vector2d[] getCorners();
 
     /** returning two crucial corners of the jungle inside the map
-     * @return a Vector2d array with mentioned corners
+     * @return Vector2d[]
+     *                      array with mentioned corners
      * no parameters
      */
     Vector2d[] getJungleCorners();
 
     /** returning average energy of living animals
-     * @return as described
+     * @return integer
+     *                  as described
      * no parameters
      */
     int getAverageEnergy();
 
     /** returning average amount of children among living animals
-     * @return as described
+     * @return integer
+     *                  as described
      * no parameters
      */
     int getAverageChildren();
 
     /** returns the dominant genotype of living animals
-     * @return as described
+     * @return Genome
+     *                  the dominant genome of living animals
      * no parameters
      */
     Genome getDominantGenome();
 
     /** indicates if an animal is alive
-     * @return a boolean value with meaning as described
+     * @return boolean
+     *                  value with meaning as described
      * parameters : an animal object
      */
     boolean checkBeingAlive(Animal animal);
 
     /** counts descendants of tracked animal
-     * @return integer number of descendants
+     * @return integer
+     *                  number of descendants
      * no parameters
      */
     int getDescendants();
@@ -145,7 +155,8 @@ public interface IWorldMap {
     void cloneAnimals();
 
     /** returning value regarding teleport ability of the map, enabling or disabling it
-     * @return boolean mentioned value
+     * @return boolean
+     *                  mentioned value
      * no parameters
      */
     boolean getTeleportValue();

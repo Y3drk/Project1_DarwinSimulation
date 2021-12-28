@@ -206,8 +206,8 @@ public class App extends Application {
         Button startStopButtonTP = new Button("Start/Stop TP");
         Button startStopButtonWL = new Button("Start/Stop WL");
 
-        Button highlightDominateGenomTP = new Button("Highlight Dominating Genome");
-        Button highlightDominateGenomWL = new Button("Highlight Dominating Genome");
+        Button highlightDominateGenomeTP = new Button("Highlight Dominating Genome");
+        Button highlightDominateGenomeWL = new Button("Highlight Dominating Genome");
 
         Button saveStatsTP = new Button("Save map statistics to file");
         Button saveStatsWL = new Button("Save map statistics to file");
@@ -225,10 +225,10 @@ public class App extends Application {
         Label teleportMapLabel = new Label("TELEPORT MAP");
         Label walledMapLabel = new Label("WALLED MAP");
 
-        HBox buttonsTP = new HBox(10,startStopButtonTP, highlightDominateGenomTP, saveStatsTP);
+        HBox buttonsTP = new HBox(10,startStopButtonTP, highlightDominateGenomeTP, saveStatsTP);
         buttonsTP.setAlignment(Pos.CENTER);
 
-        HBox buttonsWL = new HBox(10,startStopButtonWL, highlightDominateGenomWL, saveStatsWL);
+        HBox buttonsWL = new HBox(10,startStopButtonWL, highlightDominateGenomeWL, saveStatsWL);
         buttonsWL.setAlignment(Pos.CENTER);
 
         board.setPadding(new Insets(10, 10, 10, 10));
@@ -281,7 +281,7 @@ public class App extends Application {
         });
 
 
-        highlightDominateGenomTP.setOnAction(event -> {
+        highlightDominateGenomeTP.setOnAction(event -> {
             if (ifTeleportMapStopped) {
                 if (!genomeDominants.getIfHighligted(true)) {
                     GridController.resetGrid(board);
@@ -334,7 +334,7 @@ public class App extends Application {
             }
         });
 
-        highlightDominateGenomWL.setOnAction(event -> {
+        highlightDominateGenomeWL.setOnAction(event -> {
             if (ifWalledMapStopped) {
                 if (!genomeDominants.getIfHighligted(false)) {
                     GridController.resetGrid(walledBoard);

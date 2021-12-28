@@ -27,7 +27,7 @@ public class DataFileService {
     protected int sumAverageLifeLengthWL = 0;
 
     public DataFileService(){
-        String[] header = {"day","living animals","present grass", "average energy","average children","average life lenght"};
+        String[] header = {"day","living animals","present grass", "average energy","average children","average life length"};
         csvDataTP.add(header);
         csvDataWL.add(header);
     }

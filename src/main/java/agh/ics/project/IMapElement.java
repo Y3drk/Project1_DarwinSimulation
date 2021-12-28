@@ -3,20 +3,23 @@ package agh.ics.project;
 public interface IMapElement {
     /** returning the elements position
      *
-     * @return as described
+     * @return Vector2d
+     *                  position of the element
      */
     Vector2d getPosition();
 
     /** used purely for testing purposes
      *
-     * @return string representation of the item
+     * @return string
+     *                 representation of the item
      * no parameters
      */
     String toString();
 
     /** getting the image for the usage of GUI
      *
-     * @return - the address of the image we want to use in resources
+     * @return - string
+     *                  the address of the image we want to use in resources
      * no parameters
      */
     String imageAddress();

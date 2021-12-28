@@ -101,7 +101,7 @@ public enum MapDirection {
             case 5 -> MapDirection.SOUTHWEST;
             case 6 -> MapDirection.WEST;
             case 7 -> MapDirection.NORTHWEST;
-            default -> throw new IllegalStateException("Unexpected value: " + generator.nextInt(8)); //why is it required, I have no idea
+            default -> throw new IllegalStateException("Unexpected value: " + generator.nextInt(8));
         };
     }
 
