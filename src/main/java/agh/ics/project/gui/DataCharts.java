@@ -86,18 +86,19 @@ public class DataCharts {
     }
 
     public void updateChart(SimulationEngine engine, IWorldMap map){
+        int day = engine.getDay();
         if (map.getTeleportValue()) {
-            this.aliveAnimalsTP.getData().add(new XYChart.Data<>(engine.getDay(),map.countAnimals()));
-            this.aliveGrassTP.getData().add(new XYChart.Data<>(engine.getDay(),map.countGrass()));
-            this.averageEnergyTP.getData().add(new XYChart.Data<>(engine.getDay(),map.getAverageEnergy()));
-            this.averageChildrenAmountTP.getData().add(new XYChart.Data<>(engine.getDay(), map.getAverageChildren()));
-            this.averageDaysLivedTP.getData().add(new XYChart.Data<>(engine.getDay(), engine.getAverageLifeLength()));
+            this.aliveAnimalsTP.getData().add(new XYChart.Data<>(day,map.countAnimals()));
+            this.aliveGrassTP.getData().add(new XYChart.Data<>(day,map.countGrass()));
+            this.averageEnergyTP.getData().add(new XYChart.Data<>(day,map.getAverageEnergy()));
+            this.averageChildrenAmountTP.getData().add(new XYChart.Data<>(day, map.getAverageChildren()));
+            this.averageDaysLivedTP.getData().add(new XYChart.Data<>(day, engine.getAverageLifeLength()));
         } else{
-            this.aliveAnimalsWL.getData().add(new XYChart.Data<>(engine.getDay(),map.countAnimals()));
-            this.aliveGrassWL.getData().add(new XYChart.Data<>(engine.getDay(),map.countGrass()));
-            this.averageEnergyWL.getData().add(new XYChart.Data<>(engine.getDay(),map.getAverageEnergy()));
-            this.averageChildrenAmountWL.getData().add(new XYChart.Data<>(engine.getDay(), map.getAverageChildren()));
-            this.averageDaysLivedWL.getData().add(new XYChart.Data<>(engine.getDay(), engine.getAverageLifeLength()));
+            this.aliveAnimalsWL.getData().add(new XYChart.Data<>(day,map.countAnimals()));
+            this.aliveGrassWL.getData().add(new XYChart.Data<>(day,map.countGrass()));
+            this.averageEnergyWL.getData().add(new XYChart.Data<>(day,map.getAverageEnergy()));
+            this.averageChildrenAmountWL.getData().add(new XYChart.Data<>(day, map.getAverageChildren()));
+            this.averageDaysLivedWL.getData().add(new XYChart.Data<>(day, engine.getAverageLifeLength()));
         }
 
         try {
